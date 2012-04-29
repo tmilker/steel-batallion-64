@@ -1,0 +1,9 @@
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\bin\Debug\SBCTest.exe
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\bin\Debug\SBCTest.pdb
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\bin\Debug\SBC.dll
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\bin\Debug\LibUsbDotNet.dll
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\bin\Debug\LibUsbDotNet.xml
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\bin\Debug\SBC.pdb
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\obj\x86\Debug\SBCTest.exe
+C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\obj\x86\Debug\SBCTest.pdb
