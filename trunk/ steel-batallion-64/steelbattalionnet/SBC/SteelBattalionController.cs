@@ -34,10 +34,37 @@ using System.Text.RegularExpressions;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using System.Timers;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;//used for backgroundworker
 
 namespace SBC
 {
+    public struct LightProperties
+    {
+        public ControllerLEDEnum LED;
+        public bool lightOnHold;//light comes on when button is pressed
+        public int intensity;//light intensity
+        public LightProperties(ControllerLEDEnum a, bool b,int c)
+        {
+            LED = a;
+            lightOnHold = b;
+            intensity = c;
+        }
+         
+    }
+
+    public struct FlashLEDParams
+    {
+        public ControllerLEDEnum LightId;
+        public int numberOfTimes;
+        public FlashLEDParams(ControllerLEDEnum a,int b)
+        {
+            LightId = a;
+            numberOfTimes = b;
+        }
+    }
+
 	/// <summary>
 	/// Description of SteelBattalionController.
 	/// </summary>
@@ -45,17 +72,18 @@ namespace SBC
 		#region Public and Private variables
 		public DateTime LastDataEventDate = DateTime.Now;
 		public UsbDevice MyUsbDevice;
-		
-		public delegate void ButtonStateChangedDelegate(ButtonState[] arr);
+        public Hashtable ButtonLights = new Hashtable();
+
+        public delegate void ButtonStateChangedDelegate(SteelBattalionController controller, ButtonState[] arr);
 		public event ButtonStateChangedDelegate ButtonStateChanged;
 
-		public delegate void RawDataDelegate(byte[] arr);
+        public delegate void RawDataDelegate(SteelBattalionController controller, byte[] arr);
 		public event RawDataDelegate RawData;
 
 		UsbEndpointReader reader = null;
 		UsbEndpointWriter writer = null;
 		
-		Timer pollTimer = new Timer();
+		System.Timers.Timer pollTimer = new System.Timers.Timer();
 		
 		// The USB device finder that looks for the Steel Batallion controller
 		public UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(0x0A7B, 0xD000);
@@ -76,6 +104,14 @@ namespace SBC
 		/// </summary>
 		public SteelBattalionController() {
 		}
+
+        public void AddButtonLightMapping(ButtonEnum button, ControllerLEDEnum LED,bool lightOnHold,int intensity)
+        {
+            /*if (!ButtonLights.ContainsKey(button))
+                ButtonLights.Add((int)button, new LightProperties(LED, lightOnHold, intensity));
+            else*/
+                ButtonLights[(int)button] = new LightProperties(LED, lightOnHold, intensity);
+        }
 		
 		/// <summary>
 		/// Sets the intensity of the specified LED in the buffer, and sends the buffer to the controller.
@@ -130,8 +166,8 @@ namespace SBC
 		public int GetLEDState(ControllerLEDEnum LightId) {
 			int hexPos = ((int) LightId) % 2;
 			int bytePos = (((int) LightId) - hexPos) / 2;
-			
-			return (((int) rawLEDData[bytePos]) & ((hexPos == 1)?0xF0:0x0F)) / ((hexPos == 1)?0x10:0x01);
+			int returnValue = (((int) rawLEDData[bytePos]) & ((hexPos == 1)?0xF0:0x0F)) / ((hexPos == 1)?0x10:0x01);
+            return returnValue;
 		}
 
 		/// <summary>
@@ -168,11 +204,42 @@ namespace SBC
 			TestLEDs();
 			RefreshLEDState();
 		}
+
+        private void flashLED_helper(ControllerLEDEnum LightId, int numberOfTimes)
+        {
+            for (int j = 0; j < numberOfTimes; j++)
+            {
+                for (int intensity = 0; intensity <= 0x0f; intensity++)
+                    SetLEDState(LightId, intensity, true);
+                for (int intensity = 0x0f; intensity >= 0; intensity--)
+                    SetLEDState(LightId, intensity, true);
+            }
+            
+
+        }
+        //used when creating thread
+        private void flashLED_worker(object input)
+        {
+            FlashLEDParams parameters = (FlashLEDParams) input;
+            int numberOfTimes = parameters.numberOfTimes;
+            ControllerLEDEnum LightId = parameters.LightId;
+            flashLED_helper(LightId, numberOfTimes);
+            int i = 1;
+        }
+
+        //trying to make this method multi-threaded, will return to this later.
+        public void flashLED(ControllerLEDEnum LightId,int numberOfTimes)
+        {
+            FlashLEDParams inputParams = new FlashLEDParams(LightId,numberOfTimes);
+            Thread workerThread = new Thread(this.flashLED_worker);
+            //workerThread.Start(inputParams);
+            flashLED_helper(LightId, numberOfTimes);
+		}
 		
 		/// <summary>
 		/// lights 5 times...just as a sanity check to make sure I coded all of the enumerator values for the LED's :-)
 		/// </summary>
-		private void TestLEDs() {
+		public void TestLEDs() {
 			for (int j = 0; j < 5; j++) {
 				for (int intensity = 0; intensity <= 0x0f; intensity++) {
 					foreach(string value in Enum.GetNames(typeof(ControllerLEDEnum))) {
@@ -225,7 +292,7 @@ namespace SBC
 			reader.Read(buf, 0, 64, 1000, out readByteCount);
 			
 			if (this.RawData != null) {
-				RawData(buf);
+				RawData(this,buf);
 			}
 			
 			CheckStateChanged(buf);
@@ -238,9 +305,9 @@ namespace SBC
         /// Checks the individual button state
         /// </summary>
         /// <param name="buf">Int value of button enum</param>
-        public bool GetButtonState(ButtonEnum button)
+        public bool GetButtonState(int button)
         {
-            ButtonMasks.ButtonMask mask = ButtonMasks.MaskList[(int)button];
+            ButtonMasks.ButtonMask mask = ButtonMasks.MaskList[button];
 
             return ((rawControlData[mask.bytePos] & mask.maskValue) > 0);
         }
@@ -248,9 +315,9 @@ namespace SBC
         /// Checks if individual button state has changed
         /// </summary>
         /// <param name="buf">Int value of button enum</param>
-        public bool GetButtonStateChanged(ButtonEnum button)
+        public bool GetButtonStateChanged(int button)
         {
-            ButtonMasks.ButtonMask mask = ButtonMasks.MaskList[(int)button];
+            ButtonMasks.ButtonMask mask = ButtonMasks.MaskList[button];
 
             return isStateChanged(rawControlData, mask.bytePos, mask.maskValue);
         }
@@ -262,7 +329,7 @@ namespace SBC
 		private void CheckStateChanged(byte[] buf) {
 			ButtonEnum[] values = (ButtonEnum[]) Enum.GetValues(typeof(ButtonEnum));
 			ButtonState[] stateChangedArray = new ButtonState[values.Length];
-			
+            bool updateLights = false;
 			for(int i = 0; i < values.Length; i++) {
 				ButtonMasks.ButtonMask mask = ButtonMasks.MaskList[(int) values[i]];
 				
@@ -270,11 +337,39 @@ namespace SBC
 				state.button = (ButtonEnum) values[i];
 				state.currentState = ((buf[mask.bytePos] & mask.maskValue) > 0);
 				state.changed = isStateChanged(buf, mask.bytePos, mask.maskValue);
+                ButtonEnum currentButton = (ButtonEnum)(i);
+
+                //only do something if button changed, and button was pressed and button is in hashtable
+                if (state.changed && ButtonLights.ContainsKey(i))
+                {
+                    updateLights = true;
+                    LightProperties currentProperties = (LightProperties)(ButtonLights[i]);
+                    
+                    if (currentProperties.lightOnHold)
+                        if(state.currentState)
+                            SetLEDState(currentProperties.LED, currentProperties.intensity,false);
+                        else
+                            SetLEDState(currentProperties.LED, 0,false);
+                    else
+                        if (state.currentState)//only switch when button is pressed
+                        {
+                            int result = GetLEDState(currentProperties.LED);
+                            if (result > 0)//light is on
+                                SetLEDState(currentProperties.LED, 0);//turn off
+                            else
+                                SetLEDState(currentProperties.LED, currentProperties.intensity);
+                        }
+                }
+                    
+
 				stateChangedArray[(int) values[i]] = state;
 			}
+            if (updateLights)
+                RefreshLEDState();
 			
 			if ((stateChangedArray.Length > 0) && (this.ButtonStateChanged != null)) {
-				ButtonStateChanged(stateChangedArray);
+				ButtonStateChanged(this,stateChangedArray);
+
 			}
 		}
 		
@@ -439,18 +534,18 @@ namespace SBC
         /// <param name="start">the starting position of the bytes to convert</param>
         /// <param name="end">the end position of the bytes to convert</param>
         /// <returns></returns>
-        public string ConvertToBinary(byte[] asciiString, int start, int end)
+        public string GetBinaryBuffer(int start, int end)
         {
             StringBuilder bin = new StringBuilder();
             int startIndex = start;
             int endIndex    = end;
             if (startIndex < 0)
                 startIndex  =   0;
-            if (end >= asciiString.Length)
-                endIndex    =   asciiString.Length;
+            if (end >= rawControlData.Length)
+                endIndex    =   rawControlData.Length;
             for (int i = startIndex; i <= endIndex; i++)
             {
-                bin.Append(GetIntBinaryString(asciiString[i]));//radix 2
+                bin.Append(GetIntBinaryString(rawControlData[i]));
                 bin.Append(" ");
             }
             bin.Append("\n");

@@ -23,6 +23,7 @@ public:
 	void setAxis(int axisNumber,int value);
 	void setButton(int buttonNumber,int value);
 	DWORD joystick::sendBuffer();
+	int					totalButtons;//used in keeping track of button assignment	
 private:
 	TCHAR				*DevName;
 	HANDLE				h;
@@ -30,6 +31,7 @@ private:
 	JOYSTICK_STATE*		JoyState;
 	DWORD				RetSize;
 	DWORD				rc;
+
 
 	long				*Analog;
 	char				*Digital;

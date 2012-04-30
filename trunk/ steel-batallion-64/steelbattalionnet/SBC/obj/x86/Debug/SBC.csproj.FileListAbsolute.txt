@@ -5,3 +5,8 @@ C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBC\bin\Debug\L
 C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBC\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBC\obj\x86\Debug\SBC.dll
 C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBC\obj\x86\Debug\SBC.pdb
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steelbattalionnet\SBC\bin\Debug\SBC.dll
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steelbattalionnet\SBC\bin\Debug\SBC.pdb
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steelbattalionnet\SBC\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steelbattalionnet\SBC\obj\x86\Debug\SBC.dll
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steelbattalionnet\SBC\obj\x86\Debug\SBC.pdb
