@@ -32,35 +32,37 @@ using System;
 using System.Collections.Generic;
 
 namespace SBC{
+    //DO NOT CHANGE ORDER
+    //THESE match the order they are presented in the USB packet
 	public enum ButtonEnum {
 		RightJoyMainWeapon,
 		RightJoyFire,
 		RightJoyLockOn,
+        Eject,
 		CockpitHatch,
 		Ignition,
 		Start,
-		Eject,
 		MultiMonOpenClose,
 		MultiMonMapZoomInOut,
 		MultiMonModeSelect,
 		MultiMonSubMonitor,
 		MainMonZoomIn,
 		MainMonZoomOut,
+        FunctionFSS,
+        FunctionManipulator,
+        FunctionLineColorChange,
 		Washing,
 		Extinguisher,
 		Chaff,
+        FunctionTankDetach,
+        FunctionOverride,
+        FunctionNightScope,
+        FunctionF1,
+        FunctionF2,
+        FunctionF3,
 		WeaponConMain,
 		WeaponConSub,
 		WeaponConMagazine,
-		FunctionFSS,
-		FunctionManipulator,
-		FunctionLineColorChange,
-		FunctionTankDetach,
-		FunctionOverride,
-		FunctionNightScope,
-		FunctionF1,
-		FunctionF2,
-		FunctionF3,
 		Comm1,
 		Comm2,
 		Comm3,
@@ -89,45 +91,15 @@ namespace SBC{
 		}
 		
 		public static void InitializeMasks() {
-			MaskList[(int) ButtonEnum.RightJoyMainWeapon]        = new ButtonMask( 2, 0x01);
-			MaskList[(int) ButtonEnum.RightJoyFire]              = new ButtonMask( 2, 0x03);
-			MaskList[(int) ButtonEnum.RightJoyLockOn]            = new ButtonMask( 2, 0x04);
-			MaskList[(int) ButtonEnum.CockpitHatch]              = new ButtonMask( 2, 0x10);
-			MaskList[(int) ButtonEnum.Ignition]                  = new ButtonMask( 2, 0x20);
-			MaskList[(int) ButtonEnum.Start]                     = new ButtonMask( 2, 0x40);
-			MaskList[(int) ButtonEnum.Eject]                     = new ButtonMask( 2, 0x08);
-			MaskList[(int) ButtonEnum.MultiMonOpenClose]         = new ButtonMask( 2, 0x80);
-			MaskList[(int) ButtonEnum.MultiMonMapZoomInOut]      = new ButtonMask( 3, 0x01);
-			MaskList[(int) ButtonEnum.MultiMonModeSelect]        = new ButtonMask( 3, 0x02);
-			MaskList[(int) ButtonEnum.MultiMonSubMonitor]        = new ButtonMask( 3, 0x04);
-			MaskList[(int) ButtonEnum.MainMonZoomIn]             = new ButtonMask( 3, 0x08);
-			MaskList[(int) ButtonEnum.MainMonZoomOut]            = new ButtonMask( 3, 0x10);
-			MaskList[(int) ButtonEnum.Washing]                   = new ButtonMask( 4, 0x01);
-			MaskList[(int) ButtonEnum.Extinguisher]              = new ButtonMask( 4, 0x02);
-			MaskList[(int) ButtonEnum.Chaff]                     = new ButtonMask( 4, 0x04);
-			MaskList[(int) ButtonEnum.WeaponConMain]             = new ButtonMask( 5, 0x02);
-			MaskList[(int) ButtonEnum.WeaponConSub]              = new ButtonMask( 5, 0x04);
-			MaskList[(int) ButtonEnum.WeaponConMagazine]         = new ButtonMask( 5, 0x08);
-			MaskList[(int) ButtonEnum.FunctionFSS]               = new ButtonMask( 3, 0x20);
-			MaskList[(int) ButtonEnum.FunctionManipulator]       = new ButtonMask( 3, 0x40);
-			MaskList[(int) ButtonEnum.FunctionLineColorChange]   = new ButtonMask( 3, 0x80);
-			MaskList[(int) ButtonEnum.FunctionTankDetach]        = new ButtonMask( 4, 0x08);
-			MaskList[(int) ButtonEnum.FunctionOverride]          = new ButtonMask( 4, 0x10);
-			MaskList[(int) ButtonEnum.FunctionNightScope]        = new ButtonMask( 4, 0x20);
-			MaskList[(int) ButtonEnum.FunctionF1]                = new ButtonMask( 4, 0x40);
-			MaskList[(int) ButtonEnum.FunctionF2]                = new ButtonMask( 4, 0x80);
-			MaskList[(int) ButtonEnum.FunctionF3]                = new ButtonMask( 5, 0x01);
-			MaskList[(int) ButtonEnum.Comm1]                     = new ButtonMask( 5, 0x10);
-			MaskList[(int) ButtonEnum.Comm2]                     = new ButtonMask( 5, 0x20);
-			MaskList[(int) ButtonEnum.Comm3]                     = new ButtonMask( 5, 0x40);
-			MaskList[(int) ButtonEnum.Comm4]                     = new ButtonMask( 5, 0x80);
-			MaskList[(int) ButtonEnum.Comm5]                     = new ButtonMask( 6, 0x01);
-			MaskList[(int) ButtonEnum.LeftJoySightChange]        = new ButtonMask( 6, 0x02);
-			MaskList[(int) ButtonEnum.ToggleFilterControl]       = new ButtonMask( 6, 0x04);
-			MaskList[(int) ButtonEnum.ToggleOxygenSupply]        = new ButtonMask( 6, 0x08);
-			MaskList[(int) ButtonEnum.ToggleFuelFlowRate]        = new ButtonMask( 6, 0x10);
-			MaskList[(int) ButtonEnum.ToggleBuffreMaterial]      = new ButtonMask( 6, 0x20);
-			MaskList[(int) ButtonEnum.ToggleVTLocation]          = new ButtonMask( 6, 0x40);
+            //these use to be listed out, but I changed the order
+            //of the enumeration so that the enumeration matches the 
+            //way the buttons are actually mapped in the USB packet.
+            for (int i = 0; i < 39; i++)
+            {
+                int offset = 2+(int)((i)/8);
+                MaskList[i] = new ButtonMask(offset, 1<<(i%8));
+            }
+
 			MaskList[(int) ButtonEnum.TunerDialStateChange]      = new ButtonMask(24, 0x0F);
 			MaskList[(int) ButtonEnum.GearLeverStateChange]      = new ButtonMask(25, 0xFF);
 		}

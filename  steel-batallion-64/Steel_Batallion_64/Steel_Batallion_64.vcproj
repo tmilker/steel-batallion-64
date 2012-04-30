@@ -60,6 +60,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(NoInherit)"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -131,6 +132,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(NoInherit)"
+				OutputFile="..\Executables\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				TargetMachine="1"

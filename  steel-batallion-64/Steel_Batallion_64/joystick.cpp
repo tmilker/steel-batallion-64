@@ -2,7 +2,7 @@
 #include "joystick.h"
 
 
-joystick::joystick(void)
+joystick::joystick()
 {
 	JoyState = new JOYSTICK_STATE;
 	Analog = JoyState->Analog;
@@ -52,3 +52,4 @@ DWORD joystick::sendBuffer()
 	}
 	return 1;
 }
+
