@@ -1,0 +1,16 @@
+#summary One-sentence summary of this page.
+
+= Installation =
+
+Installation involves a few steps.  
+Downloading and installing prerequisites, 
+Installing 3 standard PPJoy Virtual Joysticks.
+Plugging in the Steel Batallion controller and installing the drivers.
+Running the Steel-Batallion-64 executable.
+
+
+= Details =
+
+Here is a synopsis of the video.  (In case it doesn't work)
+
+Downlaod the Steel-Batallion-64 zip file from this site:
