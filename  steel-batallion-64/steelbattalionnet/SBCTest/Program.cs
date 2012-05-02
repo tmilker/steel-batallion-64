@@ -41,7 +41,7 @@ namespace SBCTest {
 			//controller.RawData += new SBC.SteelBattalionController.RawDataDelegate(controller_RawData);
 			
 			// Add the event handler to monitor button state changed events
-			controller.ButtonStateChanged += new SBC.SteelBattalionController.ButtonStateChangedDelegate(controller_ButtonStateChanged);
+			//controller.ButtonStateChanged += new SBC.SteelBattalionController.ButtonStateChangedDelegate(controller_ButtonStateChanged);
 			
 			// Run in an infinite loop
 			while(1 == 1) { System.Threading.Thread.Sleep(10); }
