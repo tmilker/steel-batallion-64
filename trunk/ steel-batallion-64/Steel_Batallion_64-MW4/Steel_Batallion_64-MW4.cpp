@@ -46,7 +46,7 @@ using namespace System;
 int baseLineIntensity = 1;//just an average value for LED intensity
 int emergencyLightIntensity = 15;//for stuff like eject,cockpit Hatch,Ignition, and Start
 
-#include "joystick.h"
+#include "joystick.h"//having issues with this, it won't find this in debug mode unless I use an explicit directory
 
 void setGearShiftLight(SBC::SteelBattalionController ^ controller,bool setNow,int intensity)
 {
@@ -107,6 +107,8 @@ int main(array<System::String ^> ^args)
 {
 joystick ^ joystick1 = gcnew joystick;
 int lastGearValue;
+bool lastResetValue;
+bool currentResetValue;
 
 if(!joystick1->init(L"\\\\.\\PPJoyIOCTL1") < 0)
 {
@@ -127,23 +129,28 @@ controller = gcnew SBC::SteelBattalionController();
 controller->Init(50);
 
 //set all buttons by default to light up only when you press them down
-for(int i=4;i<4+30;i++)
+for(int i=3;i<33;i++)
 {
-	if (i != (int)SBC::ButtonEnum::Eject)//excluding eject since we are going to flash that one
-		controller->AddButtonLightMapping((SBC::ButtonEnum)(i-1),(SBC::ControllerLEDEnum)(i),true,baseLineIntensity);
+		controller->AddButtonLightMapping((SBC::ButtonEnum)(i),true,baseLineIntensity);
 }
 
 //add exceptions to intensity
-controller->AddButtonLightMapping(SBC::ButtonEnum::Eject,SBC::ControllerLEDEnum::EmergencyEject,true,emergencyLightIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::Ignition,SBC::ControllerLEDEnum::Ignition,true,emergencyLightIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::Start,SBC::ControllerLEDEnum::Start,true,emergencyLightIntensity);
+controller->AddButtonLightMapping(SBC::ButtonEnum::Eject,true,emergencyLightIntensity);
+controller->AddButtonLightMapping(SBC::ButtonEnum::Ignition,true,emergencyLightIntensity);
+controller->AddButtonLightMapping(SBC::ButtonEnum::Start,true,emergencyLightIntensity);
 
 //add exceptions to toggle state, lightOnHold = false means to toggle light state when pressed
-controller->AddButtonLightMapping(SBC::ButtonEnum::CockpitHatch,SBC::ControllerLEDEnum::CockpitHatch,false,emergencyLightIntensity);//false means toggle light state
-controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionLineColorChange,SBC::ControllerLEDEnum::LineColorChange,false,baseLineIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionNightScope,SBC::ControllerLEDEnum::NightScope,false,emergencyLightIntensity);//changed intensity for fun
+controller->AddButtonLightMapping(SBC::ButtonEnum::CockpitHatch,false,emergencyLightIntensity);//false means toggle light state
+controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionLineColorChange,false,baseLineIntensity);
+controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionNightScope,false,emergencyLightIntensity);//changed intensity for fun
 
-controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyFire,SBC::VirtualKeyCode::VK_J,true);
+controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyFire,SBC::VirtualKeyCode::RETURN,false);
+controller->AddButtonKeyMapping(SBC::ButtonEnum::Washing,SBC::VirtualKeyCode::SPACE,false);
+controller->AddButtonKeyMapping(SBC::ButtonEnum::WeaponConMain,SBC::VirtualKeyCode::OEM_6,false);//OEM_6 = ]
+controller->AddButtonKeyMapping(SBC::ButtonEnum::WeaponConSub,SBC::VirtualKeyCode::OEM_4,false);//OEM_4 = [
+controller->AddButtonKeyLightMapping(SBC::ButtonEnum::WeaponConMagazine,false,baseLineIntensity,SBC::VirtualKeyCode::SHIFT,SBC::VirtualKeyCode::VK_C,false);
+
+
 
 
 
@@ -189,10 +196,16 @@ setGearShiftLight(controller,true,baseLineIntensity);
 		setGearShiftLight(controller,true,baseLineIntensity);
 
 
-	for(int j=0;j<joystick1->totalButtons;j++)
-		joystick1->setButton(j,controller->GetButtonState(j));
+	//for(int j=0;j<joystick1->totalButtons;j++)
+	//	joystick1->setButton(j,controller->GetButtonState(j));
 
-
+	currentResetValue = controller->GetButtonState((int)SBC::ButtonEnum::ToggleFuelFlowRate);
+	if(currentResetValue != lastResetValue && currentResetValue)
+	{
+		controller->TestLEDs(1);//reset lights
+		setGearShiftLight(controller,true,baseLineIntensity);
+	}
+	lastResetValue = currentResetValue;
 	if(joystick1->sendBuffer()<1)
 	{
 		printf("ERROR sending joystick1 values");
