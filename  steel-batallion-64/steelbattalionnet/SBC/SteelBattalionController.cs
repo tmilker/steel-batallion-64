@@ -37,6 +37,9 @@ using System.Timers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;//used for backgroundworker
+using WindowsInput;
+
+
 
 namespace SBC
 {
@@ -50,6 +53,18 @@ namespace SBC
             LED = a;
             lightOnHold = b;
             intensity = c;
+        }
+         
+    }
+
+    public struct KeyProperties
+    {
+        public VirtualKeyCode keyCode;
+        public bool holdDown;
+        public KeyProperties(VirtualKeyCode a, bool b)
+        {
+            keyCode = a;
+            holdDown = b;
         }
          
     }
@@ -73,6 +88,7 @@ namespace SBC
 		public DateTime LastDataEventDate = DateTime.Now;
 		public UsbDevice MyUsbDevice;
         public Hashtable ButtonLights = new Hashtable();
+        public Hashtable ButtonKeys = new Hashtable();
 
         public delegate void ButtonStateChangedDelegate(SteelBattalionController controller, ButtonState[] arr);
 		public event ButtonStateChangedDelegate ButtonStateChanged;
@@ -111,7 +127,15 @@ namespace SBC
                 ButtonLights.Add((int)button, new LightProperties(LED, lightOnHold, intensity));
             else*/
                 ButtonLights[(int)button] = new LightProperties(LED, lightOnHold, intensity);
+            
         }
+
+        public void AddButtonKeyMapping(ButtonEnum button, VirtualKeyCode keyCode, bool holdDown)
+        {
+                ButtonKeys[(int)button] = new KeyProperties(keyCode, holdDown);
+        }
+
+
 		
 		/// <summary>
 		/// Sets the intensity of the specified LED in the buffer, and sends the buffer to the controller.
@@ -224,7 +248,6 @@ namespace SBC
             int numberOfTimes = parameters.numberOfTimes;
             ControllerLEDEnum LightId = parameters.LightId;
             flashLED_helper(LightId, numberOfTimes);
-            int i = 1;
         }
 
         //trying to make this method multi-threaded, will return to this later.
@@ -340,25 +363,41 @@ namespace SBC
                 ButtonEnum currentButton = (ButtonEnum)(i);
 
                 //only do something if button changed, and button was pressed and button is in hashtable
-                if (state.changed && ButtonLights.ContainsKey(i))
+                if (state.changed)
                 {
-                    updateLights = true;
-                    LightProperties currentProperties = (LightProperties)(ButtonLights[i]);
-                    
-                    if (currentProperties.lightOnHold)
-                        if(state.currentState)
-                            SetLEDState(currentProperties.LED, currentProperties.intensity,false);
-                        else
-                            SetLEDState(currentProperties.LED, 0,false);
-                    else
-                        if (state.currentState)//only switch when button is pressed
-                        {
-                            int result = GetLEDState(currentProperties.LED);
-                            if (result > 0)//light is on
-                                SetLEDState(currentProperties.LED, 0);//turn off
+                    if(ButtonLights.ContainsKey(i))
+                    {
+                        updateLights = true;
+                        LightProperties currentLightProperties = (LightProperties)(ButtonLights[i]);
+
+                        if (currentLightProperties.lightOnHold)
+                            if(state.currentState)
+                                SetLEDState(currentLightProperties.LED, currentLightProperties.intensity,false);
                             else
-                                SetLEDState(currentProperties.LED, currentProperties.intensity);
-                        }
+                                SetLEDState(currentLightProperties.LED, 0,false);
+                        else
+                            if (state.currentState)//only switch when button is pressed
+                            {
+                                int result = GetLEDState(currentLightProperties.LED);
+                                if (result > 0)//light is on
+                                    SetLEDState(currentLightProperties.LED, 0);//turn off
+                                else
+                                    SetLEDState(currentLightProperties.LED, currentLightProperties.intensity);
+                            }
+                      }
+                    if(ButtonKeys.ContainsKey(i))
+                    {
+                        KeyProperties currentKeyProperties = (KeyProperties)(ButtonKeys[i]);
+
+                        if (currentKeyProperties.holdDown)//don't hold down the key between strokes
+                            if (state.currentState)//button is pressed, then press key
+                                InputSimulator.SimulateKeyDown((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode);
+                            else
+                                InputSimulator.SimulateKeyUp((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode);
+                        else
+                            if (state.currentState)//only switch when button is pressed
+                                InputSimulator.SimulateKeyPress((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode);
+                    }
                 }
                     
 

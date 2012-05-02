@@ -39,6 +39,10 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="InputSimulator, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\InputSimulator\bin\Release\InputSimulator.dll</HintPath>
+    </Reference>
     <Reference Include="LibUsbDotNet">
       <HintPath>..\..\..\..\..\..\Program Files\LibUsbDotNet\LibUsbDotNet.dll</HintPath>
     </Reference>
@@ -57,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Buttons.cs" />
+    <Compile Include="VirtualKeyCode.cs" />
     <Compile Include="ControllerLEDEnum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SteelBattalionController.cs" />
