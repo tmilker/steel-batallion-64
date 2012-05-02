@@ -59,12 +59,23 @@ namespace SBC
 
     public struct KeyProperties
     {
-        public VirtualKeyCode keyCode;
+        public VirtualKeyCode keyCode1;
+        public VirtualKeyCode modifier;
         public bool holdDown;
+        public bool useModifier;
         public KeyProperties(VirtualKeyCode a, bool b)
         {
-            keyCode = a;
+            modifier = (VirtualKeyCode) (0);
+            keyCode1 = a;
             holdDown = b;
+            useModifier = false;
+        }
+        public KeyProperties(VirtualKeyCode a, VirtualKeyCode b, bool c)//used when we have a modifier
+        {
+            modifier = a;
+            keyCode1 = b;
+            holdDown = c;
+            useModifier = true;
         }
          
     }
@@ -121,6 +132,25 @@ namespace SBC
 		public SteelBattalionController() {
 		}
 
+        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, VirtualKeyCode keyCode, bool holdDown)
+        {
+            AddButtonLightMapping(button, lightOnHold, intensity);
+            AddButtonKeyMapping(button, keyCode, holdDown);
+        }
+
+        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, VirtualKeyCode keyCode1, VirtualKeyCode keyCode2, bool holdDown)
+        {
+            AddButtonLightMapping(button, lightOnHold, intensity);
+            AddButtonKeyMapping(button, keyCode1, keyCode2, holdDown);
+        }
+
+        public void AddButtonLightMapping(ButtonEnum button, bool lightOnHold, int intensity)
+        {
+            int buttonEquivalent = (int)button;
+            ControllerLEDEnum light = (ControllerLEDEnum)GetLightForButton(button);
+            AddButtonLightMapping(button, light, lightOnHold, intensity);
+        }
+
         public void AddButtonLightMapping(ButtonEnum button, ControllerLEDEnum LED,bool lightOnHold,int intensity)
         {
             /*if (!ButtonLights.ContainsKey(button))
@@ -135,6 +165,22 @@ namespace SBC
                 ButtonKeys[(int)button] = new KeyProperties(keyCode, holdDown);
         }
 
+        public void AddButtonKeyMapping(ButtonEnum button, VirtualKeyCode modifier, VirtualKeyCode keyCode, bool holdDown)
+        {
+            ButtonKeys[(int)button] = new KeyProperties(modifier,keyCode, holdDown);
+        }
+
+        private ControllerLEDEnum GetLightForButton(ButtonEnum button)
+        {
+            int buttonNumber =(int)button;
+            if( buttonNumber >= 3 && buttonNumber <33)
+            {
+                return (ControllerLEDEnum)(int)button + 1;
+            }
+            else
+                throw new System.ArgumentException("Button not a lit button");
+                
+        }
 
 		
 		/// <summary>
@@ -258,12 +304,17 @@ namespace SBC
             //workerThread.Start(inputParams);
             flashLED_helper(LightId, numberOfTimes);
 		}
+
+        public void TestLEDs()
+        {
+            TestLEDs(5);
+        }
 		
 		/// <summary>
 		/// lights 5 times...just as a sanity check to make sure I coded all of the enumerator values for the LED's :-)
 		/// </summary>
-		public void TestLEDs() {
-			for (int j = 0; j < 5; j++) {
+		public void TestLEDs(int frequency) {
+			for (int j = 0; j < frequency; j++) {
 				for (int intensity = 0; intensity <= 0x0f; intensity++) {
 					foreach(string value in Enum.GetNames(typeof(ControllerLEDEnum))) {
 						ControllerLEDEnum LightId = (ControllerLEDEnum) Enum.Parse(typeof(ControllerLEDEnum), value);
@@ -363,48 +414,59 @@ namespace SBC
                 ButtonEnum currentButton = (ButtonEnum)(i);
 
                 //only do something if button changed, and button was pressed and button is in hashtable
-                if (state.changed)
-                {
-                    if(ButtonLights.ContainsKey(i))
-                    {
-                        updateLights = true;
-                        LightProperties currentLightProperties = (LightProperties)(ButtonLights[i]);
+				if (state.changed)
+				{
+					if(ButtonLights.ContainsKey(i))
+					{
+						updateLights = true;
+						LightProperties currentLightProperties = (LightProperties)(ButtonLights[i]);
 
-                        if (currentLightProperties.lightOnHold)
-                            if(state.currentState)
-                                SetLEDState(currentLightProperties.LED, currentLightProperties.intensity,false);
-                            else
-                                SetLEDState(currentLightProperties.LED, 0,false);
-                        else
-                            if (state.currentState)//only switch when button is pressed
-                            {
-                                int result = GetLEDState(currentLightProperties.LED);
-                                if (result > 0)//light is on
-                                    SetLEDState(currentLightProperties.LED, 0);//turn off
-                                else
-                                    SetLEDState(currentLightProperties.LED, currentLightProperties.intensity);
-                            }
-                      }
-                    if(ButtonKeys.ContainsKey(i))
-                    {
-                        KeyProperties currentKeyProperties = (KeyProperties)(ButtonKeys[i]);
-
-                        if (currentKeyProperties.holdDown)//don't hold down the key between strokes
+						if (currentLightProperties.lightOnHold)
+							if(state.currentState)
+								SetLEDState(currentLightProperties.LED, currentLightProperties.intensity,false);
+							else
+								SetLEDState(currentLightProperties.LED, 0,false);
+						else
+							if (state.currentState)//only switch when button is pressed
+							{
+								int result = GetLEDState(currentLightProperties.LED);
+								if (result > 0)//light is on
+									SetLEDState(currentLightProperties.LED, 0);//turn off
+								else
+									SetLEDState(currentLightProperties.LED, currentLightProperties.intensity);
+							}
+					  }
+					if (ButtonKeys.ContainsKey(i))
+					{
+						KeyProperties currentKeyProperties = (KeyProperties)(ButtonKeys[i]);
+						if (currentKeyProperties.useModifier)
+						{
                             if (state.currentState)//button is pressed, then press key
-                                InputSimulator.SimulateKeyDown((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode);
-                            else
-                                InputSimulator.SimulateKeyUp((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode);
-                        else
-                            if (state.currentState)//only switch when button is pressed
-                                InputSimulator.SimulateKeyPress((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode);
-                    }
-                }
-                    
+                                InputSimulator.SimulateModifiedKeyStroke((WindowsInput.VirtualKeyCode)currentKeyProperties.modifier, (WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode1);
+						}
+						else
+						{
+							if (currentKeyProperties.holdDown)//send separate down and up keypresses
+							{
+								if (state.currentState)
+									InputSimulator.SimulateKeyDown((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode1);
+								else
+									InputSimulator.SimulateKeyUp((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode1);
+							}
+							else
+							{
+                                if (state.currentState)
+								    InputSimulator.SimulateKeyPress((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode1);
+							}
+						}
+					}
+				}
+					
 
 				stateChangedArray[(int) values[i]] = state;
 			}
-            if (updateLights)
-                RefreshLEDState();
+			if (updateLights)
+				RefreshLEDState();
 			
 			if ((stateChangedArray.Length > 0) && (this.ButtonStateChanged != null)) {
 				ButtonStateChanged(this,stateChangedArray);
