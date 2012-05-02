@@ -15,3 +15,5 @@ C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steel
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steelbattalionnet\SBCTest\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steelbattalionnet\SBCTest\obj\x86\Debug\SBCTest.exe
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel_Batallion_64\steelbattalionnet\SBCTest\obj\x86\Debug\SBCTest.pdb
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\steelbattalionnet\SBCTest\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\steelbattalionnet\SBCTest\obj\x86\Debug\SBCTest.exe

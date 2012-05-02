@@ -4,3 +4,5 @@ C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\bin\Rel
 C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\bin\Release\LibUsbDotNet.xml
 C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\obj\x86\Release\ResolveAssemblyReference.cache
 C:\Users\Santiago\Documents\Visual Studio 2010\steelbattalionnet\SBCTest\obj\x86\Release\SBCTest.exe
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\steelbattalionnet\SBCTest\obj\x86\Release\ResolveAssemblyReference.cache
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\steelbattalionnet\SBCTest\obj\x86\Release\SBCTest.exe
