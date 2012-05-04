@@ -72,7 +72,7 @@ namespace SBC{
 		ToggleFilterControl,
 		ToggleOxygenSupply,
 		ToggleFuelFlowRate,
-		ToggleBuffreMaterial,
+		ToggleBufferMaterial,
 		ToggleVTLocation,
 		TunerDialStateChange,
 		GearLeverStateChange
