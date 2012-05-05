@@ -96,10 +96,12 @@ namespace SBC
 	/// </summary>
 	public class SteelBattalionController {
 		#region Public and Private variables
-		public DateTime LastDataEventDate = DateTime.Now;
-		public UsbDevice MyUsbDevice;
-        public Hashtable ButtonLights = new Hashtable();
-        public Hashtable ButtonKeys = new Hashtable();
+		private DateTime LastDataEventDate = DateTime.Now;
+		private UsbDevice MyUsbDevice;
+        private Hashtable ButtonLights = new Hashtable();
+        private Hashtable ButtonKeys = new Hashtable();
+        private bool updateGearLights = true;
+        private int gearLightIntensity = 3;
 
         public delegate void ButtonStateChangedDelegate(SteelBattalionController controller, ButtonState[] arr);
 		public event ButtonStateChangedDelegate ButtonStateChanged;
@@ -113,7 +115,7 @@ namespace SBC
 		System.Timers.Timer pollTimer = new System.Timers.Timer();
 		
 		// The USB device finder that looks for the Steel Batallion controller
-		public UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(0x0A7B, 0xD000);
+		private UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(0x0A7B, 0xD000);
 
 		/// <summary>
 		/// The byte buffer that the raw control data is stored
@@ -131,6 +133,36 @@ namespace SBC
 		/// </summary>
 		public SteelBattalionController() {
 		}
+
+        public void setGearLights(bool update,int intensity)
+        {
+            updateGearLights = update;
+            gearLightIntensity = intensity;
+        }
+
+        //this only sets the gearLights, you still have to refreshlights
+        private void GearLightsRefresh(int gearValue)
+        {
+         /*	LED VALUES
+	        Gear5 = 41,
+	        Gear4 = 40,
+	        Gear3 = 39,
+	        Gear2 = 38,
+	        Gear1 = 37,
+	        GearN = 36,
+	        GearR = 35,*/
+        	
+	        for(int i=35;i<=41;i++)
+		        SetLEDState((ControllerLEDEnum)(i),0,false);//turn all off
+
+	        //int gearValue = GearLever;//returns values -2,-1,1,2,3,4,5
+	        if (gearValue < 0)
+		        SetLEDState((ControllerLEDEnum)((int) ControllerLEDEnum.Gear1+gearValue),gearLightIntensity,false);
+	        else
+                SetLEDState((ControllerLEDEnum)((int)ControllerLEDEnum.GearN + gearValue), gearLightIntensity, false);
+        }
+
+
 
         public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, VirtualKeyCode keyCode, bool holdDown)
         {
@@ -264,15 +296,18 @@ namespace SBC
             byte[] buf = new byte[64];
             reader.Read(buf, 0, 64, 1000, out readByteCount);
 
-			
+
 			ButtonMasks.InitializeMasks();
-			
+
 			SetPollingInterval(Interval);
 			pollTimer.Elapsed += new ElapsedEventHandler(pollTimer_Elapsed);
 			pollTimer.Start();
 
 			TestLEDs();
+            if (updateGearLights)
+                GearLightsRefresh((int)unchecked((sbyte)buf[25]));
 			RefreshLEDState();
+
 		}
 
         private void flashLED_helper(ControllerLEDEnum LightId, int numberOfTimes)
@@ -416,6 +451,11 @@ namespace SBC
                 //only do something if button changed, and button was pressed and button is in hashtable
 				if (state.changed)
 				{
+                    if (updateGearLights && state.button == ButtonEnum.GearLeverStateChange)
+                    {
+                        GearLightsRefresh((int)unchecked((sbyte)buf[25]));//copied this code from GearLever accessor, changed it since we need ot
+                        updateLights = true;
+                    }
 					if(ButtonLights.ContainsKey(i))
 					{
 						updateLights = true;
@@ -465,9 +505,10 @@ namespace SBC
 
 				stateChangedArray[(int) values[i]] = state;
 			}
+
 			if (updateLights)
 				RefreshLEDState();
-			
+
 			if ((stateChangedArray.Length > 0) && (this.ButtonStateChanged != null)) {
 				ButtonStateChanged(this,stateChangedArray);
 

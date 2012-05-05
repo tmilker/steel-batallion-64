@@ -164,13 +164,7 @@ controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionLineColorChange,SBC::
 controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionNightScope,SBC::ControllerLEDEnum::NightScope,false,emergencyLightIntensity);//changed intensity for fun
 
 
-
-
-
-
-bool check = controller->ButtonLights->ContainsKey(SBC::ButtonEnum::FunctionLineColorChange);
-lastGearValue = controller->GearLever;
-setGearShiftLight(controller,true,baseLineIntensity);
+controller->setGearLights(true,15);
 
 
 // Add the event handler to monitor button state changed events
