@@ -54,29 +54,6 @@ int emergencyLightIntensity = 15;//for stuff like eject,cockpit Hatch,Ignition, 
 
 
 
-void setGearShiftLight(SBC::SteelBattalionController ^ controller,bool setNow,int intensity)
-{
-	/*	LED VALUES
-	Gear5 = 41,
-	Gear4 = 40,
-	Gear3 = 39,
-	Gear2 = 38,
-	Gear1 = 37,
-	GearN = 36,
-	GearR = 35,*/
-	
-	for(int i=35;i<=41;i++)
-		controller->SetLEDState((SBC::ControllerLEDEnum)(i),0,false);//turn all off
-
-	int gearValue = controller->GearLever;//returns values -2,-1,1,2,3,4,5
-	if (gearValue < 0)
-		controller->SetLEDState((SBC::ControllerLEDEnum)((int)SBC::ControllerLEDEnum::Gear1+gearValue),intensity,setNow);//3 stands for intensity
-	else
-	controller->SetLEDState(SBC::ControllerLEDEnum::GearN + (SBC::ControllerLEDEnum)(gearValue),intensity,setNow);
-	
-}
-
-
 //this seems to work slowly, I'm not sure why.
 static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ controller, array<SBC::ButtonState ^> ^ stateChangedArray) 
 {
@@ -100,11 +77,6 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 		}
 	}*/
 
-	if (stateChangedArray[(int) SBC::ButtonEnum::GearLeverStateChange]->changed) 
-	{
-		setGearShiftLight(controller,true,baseLineIntensity);
-	}
-
 
 }
 
@@ -116,12 +88,14 @@ int lastGearValue;
 bool lastResetValue;
 bool currentResetValue;
 Hashtable^ ButtonsHash	=	gcnew ::Hashtable();
+Hashtable^ KeysHash		=	gcnew ::Hashtable();//hash table of all valid keys to map to
 Hashtable^ HOH			=	gcnew ::Hashtable();//hash of hashes
 SBC::SteelBattalionController^ controller;
 
 // Initialize the controller
 controller = gcnew SBC::SteelBattalionController();
 controller->Init(50);
+
 
 
 if(!joystick1->init(L"\\\\.\\PPJoyIOCTL1") < 0)
@@ -132,25 +106,28 @@ if(!joystick1->init(L"\\\\.\\PPJoyIOCTL1") < 0)
 }
 
 
-FILE * stream = fopen("buttons.txt","w");
-int i =0;
+FILE * keyStream = fopen("ValidKeys.txt","w");
+FILE * buttonStream = fopen("Buttons.txt","w");
 
-//this works because I know that buttons are a normal enumeration
-
-/*for each(Object^ key in Enum::GetNames(SBC::VirtualKeyCode::typeid))
+fprintf(keyStream,"[Keys]\n");
+for each(Object^ key in Enum::GetValues(SBC::VirtualKeyCode::typeid))
 {
-
-}*/
-
-
-//this works because I know that buttons are a normal enumeration
-for each(Object^ button in Enum::GetNames(SBC::ButtonEnum::typeid))
-{
-	ButtonsHash->Add(button->ToString()->ToUpper(),i);
-	printf("%s %i \n",button->ToString()->ToUpper(),i);
-	i++;
+	//printf("%s = %i\n",o->ToString(), System::Convert::ToInt32(Enum::Format( SBC::VirtualKeyCode::typeid, o,  "D" )) );
+	int value = System::Convert::ToInt32(Enum::Format( SBC::VirtualKeyCode::typeid, key,  "D" ));
+	KeysHash[key->ToString()->ToUpper()] = value;
+	fprintf(keyStream,"%s = %i\n",key->ToString(),  value);
 }
-//SBC::ButtonEnum test = (SBC::ButtonEnum)ButtonsHash["RIGHTJOYMAINWEAPON"];
+fclose(keyStream);
+
+
+fprintf(buttonStream,"[Buttons]\n");
+for each(Object^ button in Enum::GetValues(SBC::ButtonEnum::typeid))
+{
+	int value = System::Convert::ToInt32(Enum::Format( SBC::ButtonEnum::typeid, button,  "D" ));
+	ButtonsHash[button->ToString()->ToUpper()] = value;
+	fprintf(buttonStream,"%s = %i \n",button->ToString()->ToUpper(),value);
+}
+fclose(buttonStream);
 
 
 try
@@ -230,43 +207,40 @@ for each(::Object ^ button in ((::Hashtable ^)HOH["LIGHTVALUES"])->Keys)
 		else
 			controller->AddButtonLightMapping(buttonInput,true,intensity);
 	}
-/*
-//add exceptions to intensity
-controller->AddButtonLightMapping(SBC::ButtonEnum::Eject,true,emergencyLightIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::Ignition,true,emergencyLightIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::Start,true,emergencyLightIntensity);
 
-//add exceptions to toggle state, lightOnHold = false means to toggle light state when pressed
-controller->AddButtonLightMapping(SBC::ButtonEnum::CockpitHatch,false,emergencyLightIntensity);//false means toggle light state
-controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionLineColorChange,false,baseLineIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionNightScope,false,emergencyLightIntensity);//changed intensity for fun
+//SET button key mapping
+if(HOH->Contains("BUTTONKEYMAPPINGS"))
+for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONKEYMAPPINGS"])->Keys)
+	{
+		SBC::ButtonEnum buttonInput = (SBC::ButtonEnum)ButtonsHash[button];
+		::Hashtable ^ buttonMap = (::Hashtable ^)HOH["BUTTONKEYMAPPINGS"];
+		int temp = (int)KeysHash[(String ^)buttonMap[button]];
+		SBC::VirtualKeyCode keyCode = (SBC::VirtualKeyCode)temp;
 
+		controller->AddButtonKeyMapping(buttonInput,keyCode,false);//false means don't send separate keydown/keyup commands
+	}
 
-//add key mapping
-controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyFire,SBC::VirtualKeyCode::RETURN,false);
-controller->AddButtonKeyMapping(SBC::ButtonEnum::Washing,SBC::VirtualKeyCode::SPACE,false);
-controller->AddButtonKeyMapping(SBC::ButtonEnum::WeaponConMain,SBC::VirtualKeyCode::OEM_6,false);//OEM_6 = ]
-controller->AddButtonKeyMapping(SBC::ButtonEnum::WeaponConSub,SBC::VirtualKeyCode::OEM_4,false);//OEM_4 = [
-controller->AddButtonKeyLightMapping(SBC::ButtonEnum::WeaponConMagazine,false,baseLineIntensity,SBC::VirtualKeyCode::SHIFT,SBC::VirtualKeyCode::VK_C,false);
-*/
-
-
-
-
-
-bool check = controller->ButtonLights->ContainsKey(SBC::ButtonEnum::FunctionLineColorChange);
-lastGearValue = controller->GearLever;
-setGearShiftLight(controller,true,baseLineIntensity);
-
-
+//SET modifier button key mapping
+if(HOH->Contains("BUTTONKEYMAPPINGS") && HOH->Contains("BUTTONMODIFIERS"))
+for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONMODIFIERS"])->Keys)
+	{
+		SBC::ButtonEnum buttonInput = (SBC::ButtonEnum)ButtonsHash[button];
+		::Hashtable ^ buttonMap = (::Hashtable ^)HOH["BUTTONKEYMAPPINGS"];
+		::Hashtable ^ modifierMap = (::Hashtable ^)HOH["BUTTONMODIFIERS"];
+		if(buttonMap->Contains(button))
+		{
+			int originalKey = (int) KeysHash[(String ^)buttonMap[button]];
+			int modifierKey = (int) KeysHash[(String ^)modifierMap[button]];
+			controller->AddButtonKeyMapping(buttonInput,(SBC::VirtualKeyCode)modifierKey,(SBC::VirtualKeyCode)originalKey,false);//false means don't send separate keydown/keyup commands
+		}
+	}
+   
 // Add the event handler to monitor button state changed events
 //controller->ButtonStateChanged += gcnew SBC::SteelBattalionController::ButtonStateChangedDelegate(controller_ButtonStateChanged);
 
  Console::WriteLine(L"Welcome to Steel Batallion 64");
- Console::WriteLine(L"Leave this Running While you Play");
- Console::WriteLine(L"This program will update PPJoy Virtual Joysticks 1 - 3");
- Console::WriteLine(L"Run a one time calibration on each PPJoy Virtual Joystick");
- Console::WriteLine(L"so the Game Controllers panel updates");
+ Console::WriteLine(L"Leave this running while you play");
+ Console::WriteLine(L"This program will update PPJoy Virtual Joystick 1");
 
  while(1)
  {
@@ -279,30 +253,12 @@ setGearShiftLight(controller,true,baseLineIntensity);
 	joystick1->setAxis(2,-1*(controller->RightPedal - controller->MiddlePedal));
 	joystick1->setAxis(3,controller->RotationLever+controller->SightChangeX);
 	
-/*
-	joysticks[1]->setAxis(3,controller->TunerDial);
 
-
-	joysticks[2]->setAxis(0,controller->SightChangeX);
-	joysticks[2]->setAxis(1,controller->SightChangeY);
-	joysticks[2]->setAxis(2,controller->RotationLever);
-	joysticks[2]->setAxis(3,controller->GearLever);*/
-
-	int currentGearValue = controller->GearLever;
-
-	//this seems to work ALOT faster than using the delegate call back, not sure just yet why.
-	if (currentGearValue != lastGearValue)
-		setGearShiftLight(controller,true,baseLineIntensity);
-
-
-	//for(int j=0;j<joystick1->totalButtons;j++)
-	//	joystick1->setButton(j,controller->GetButtonState(j));
 
 	currentResetValue = controller->GetButtonState((int)SBC::ButtonEnum::ToggleFuelFlowRate);
 	if(currentResetValue != lastResetValue && currentResetValue)
 	{
 		controller->TestLEDs(1);//reset lights
-		setGearShiftLight(controller,true,baseLineIntensity);
 	}
 	lastResetValue = currentResetValue;
 	if(joystick1->sendBuffer()<1)
@@ -311,7 +267,6 @@ setGearShiftLight(controller,true,baseLineIntensity);
 		Sleep(1000);
 		break;
 	}
-	lastGearValue = currentGearValue;
 	Sleep(50);
  }
 
