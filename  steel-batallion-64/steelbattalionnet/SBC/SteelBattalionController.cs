@@ -351,7 +351,8 @@ namespace SBC
 		/// <summary>
 		/// lights 5 times...just as a sanity check to make sure I coded all of the enumerator values for the LED's :-)
 		/// </summary>
-		public void TestLEDs(int frequency) {
+		public void TestLEDs(int frequency) 
+        {
 			for (int j = 0; j < frequency; j++) {
 				for (int intensity = 0; intensity <= 0x0f; intensity++) {
 					foreach(string value in Enum.GetNames(typeof(ControllerLEDEnum))) {
@@ -384,6 +385,9 @@ namespace SBC
 					RefreshLEDState();
 				}
 			}
+            if (updateGearLights)
+                GearLightsRefresh(GearLever);
+            RefreshLEDState();
 		}
 
 		/// <summary>
@@ -438,6 +442,27 @@ namespace SBC
 
             return isStateChanged(rawControlData, mask.bytePos, mask.maskValue);
         }
+
+        public void sendKeyPress(VirtualKeyCode keycode)
+        {
+            InputSimulator.SimulateKeyPress((WindowsInput.VirtualKeyCode)keycode);
+        }
+
+        public void sendKeyPress(VirtualKeyCode modifier, VirtualKeyCode keycode)
+        {
+            InputSimulator.SimulateModifiedKeyStroke((WindowsInput.VirtualKeyCode)modifier, (WindowsInput.VirtualKeyCode)keycode);
+        }
+
+        public void sendKeyDown(VirtualKeyCode keycode)
+        {
+            InputSimulator.SimulateKeyDown((WindowsInput.VirtualKeyCode)keycode);
+        }
+
+        public void sendKeyUp(VirtualKeyCode keycode)
+        {
+            InputSimulator.SimulateKeyUp((WindowsInput.VirtualKeyCode)keycode);
+        }
+
 
 		/// <summary>
 		/// Checks the button state based on the raw data returned, and if it has, the ButtonStateChanged event is raised
