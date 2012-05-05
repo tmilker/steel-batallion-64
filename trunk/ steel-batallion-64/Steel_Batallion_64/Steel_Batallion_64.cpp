@@ -164,7 +164,7 @@ controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionLineColorChange,SBC::
 controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionNightScope,SBC::ControllerLEDEnum::NightScope,false,emergencyLightIntensity);//changed intensity for fun
 
 
-controller->setGearLights(true,15);
+controller->setGearLights(true,10);
 
 
 // Add the event handler to monitor button state changed events
@@ -196,10 +196,6 @@ controller->setGearLights(true,15);
 	joysticks[2]->setAxis(3,controller->GearLever);
 
 	int currentGearValue = controller->GearLever;
-
-	//this seems to work ALOT faster than using the delegate call back, not sure just yet why.
-	if (currentGearValue != lastGearValue)
-		setGearShiftLight(controller,true,baseLineIntensity);
 
 	if (controller->GetButtonState((int)(SBC::ButtonEnum::Eject)))
 		controller->flashLED(SBC::ControllerLEDEnum::EmergencyEject,3);//flash eject button 3 times

@@ -272,7 +272,10 @@ for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONMODIFIERS"])->Keys)
 	joystick1->setAxis(2,-1*(controller->RightPedal - controller->MiddlePedal));
 	joystick1->setAxis(3,controller->RotationLever+controller->SightChangeX);
 	
+	if(controller->RightPedal > 20 || controller->MiddlePedal > 20)
+		controller->sendKeyDown(SBC::VirtualKeyCode::VK_J);
 
+		
 
 	currentResetValue = controller->GetButtonState((int)SBC::ButtonEnum::ToggleFuelFlowRate);
 	if(currentResetValue != lastResetValue && currentResetValue)
