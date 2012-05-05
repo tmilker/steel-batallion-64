@@ -51,7 +51,7 @@ int baseLineIntensity = 1;//just an average value for LED intensity
 int emergencyLightIntensity = 15;//for stuff like eject,cockpit Hatch,Ignition, and Start
 
 #include "joystick.h"//having issues with this, it won't find this in debug mode unless I use an explicit directory
-
+int comShift = 0;
 
 
 //this seems to work slowly, I'm not sure why.
@@ -59,25 +59,43 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 {
 	// Typically, you want to check which buttons were triggered.  This array contains
 	// a list of all buttons, their current values, and whether their state has changed.
-	if (stateChangedArray[(int) SBC::ButtonEnum::FunctionLineColorChange]->changed) {
-		if(controller->GetButtonState((int) SBC::ButtonEnum::FunctionLineColorChange))//only switch light on downpress
-		{
-			int currentLEDState = controller->GetLEDState(SBC::ControllerLEDEnum::LineColorChange);
-			controller->SetLEDState(SBC::ControllerLEDEnum::LineColorChange,(!currentLEDState)*5);
-		}
-		// Do specific things when the "Line Color Change" button has a state change
-	}
-
-	// Use a for loop to examine each one of the states returned in the state change array
-	/*for each(SBC::ButtonState^ state in stateChangedArray) 
+	if (stateChangedArray[(int) SBC::ButtonEnum::TunerDialStateChange]->changed) 
 	{
-		if (state->changed) {
-			// Write out the state of the button if it was changed
-			printf("Button: %s  State: %s\n", state->button.ToString(), state->currentState.ToString());
+		int previousCom = comShift;
+		
+		if(controller->TunerDial <= 4)
+			comShift = 0;
+		else
+			comShift = 1;
+
+		if((previousCom != comShift))//only switch light on downpress
+		{
+			int startingValue = (int)SBC::ButtonEnum::Comm1;
+			int F1Key = (int)SBC::VirtualKeyCode::F1;
+			if(comShift == 1)
+			{
+				for(int i = startingValue; i<startingValue+5;i++)
+				{
+					controller->SetLEDState((SBC::ControllerLEDEnum)(i+1),15,true);
+					Sleep(10);
+					controller->SetLEDState((SBC::ControllerLEDEnum)(i+1),0,true);
+					SBC::VirtualKeyCode virtualKey = (SBC::VirtualKeyCode)((int)SBC::VirtualKeyCode::F1+(i-startingValue));
+					SBC::ButtonEnum button = (SBC::ButtonEnum) i;
+					controller->AddButtonKeyMapping(button,virtualKey,false);
+				}
+			}
+			else
+			{
+				for(int i = startingValue+4; i>=startingValue;i--)
+				{
+					controller->SetLEDState((SBC::ControllerLEDEnum)(i+1),15,true);
+					Sleep(10);
+					controller->SetLEDState((SBC::ControllerLEDEnum)(i+1),0,true);//lights are shifted by 1 compared to buttons
+					controller->AddButtonKeyMapping((SBC::ButtonEnum) i,(SBC::VirtualKeyCode)((int)SBC::VirtualKeyCode::F1+(i-startingValue+5)),false);
+				}
+			}
 		}
-	}*/
-
-
+	}
 }
 
 
@@ -95,6 +113,8 @@ SBC::SteelBattalionController^ controller;
 // Initialize the controller
 controller = gcnew SBC::SteelBattalionController();
 controller->Init(50);
+// Add the event handler to monitor button state changed events
+controller->ButtonStateChanged += gcnew SBC::SteelBattalionController::ButtonStateChangedDelegate(controller_ButtonStateChanged);
 
 
 
@@ -217,7 +237,7 @@ for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONKEYMAPPINGS"])->Keys)
 		int temp = (int)KeysHash[(String ^)buttonMap[button]];
 		SBC::VirtualKeyCode keyCode = (SBC::VirtualKeyCode)temp;
 
-		controller->AddButtonKeyMapping(buttonInput,keyCode,false);//false means don't send separate keydown/keyup commands
+		controller->AddButtonKeyMapping(buttonInput,keyCode,true);//true means send separate keydown/keyup commands
 	}
 
 //SET modifier button key mapping
@@ -235,8 +255,7 @@ for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONMODIFIERS"])->Keys)
 		}
 	}
    
-// Add the event handler to monitor button state changed events
-//controller->ButtonStateChanged += gcnew SBC::SteelBattalionController::ButtonStateChangedDelegate(controller_ButtonStateChanged);
+
 
  Console::WriteLine(L"Welcome to Steel Batallion 64");
  Console::WriteLine(L"Leave this running while you play");

@@ -102,6 +102,7 @@ namespace SBC
         private Hashtable ButtonKeys = new Hashtable();
         private bool updateGearLights = true;
         private int gearLightIntensity = 3;
+        public ButtonState[] stateChangedArray;
 
         public delegate void ButtonStateChangedDelegate(SteelBattalionController controller, ButtonState[] arr);
 		public event ButtonStateChangedDelegate ButtonStateChanged;
@@ -162,8 +163,6 @@ namespace SBC
                 SetLEDState((ControllerLEDEnum)((int)ControllerLEDEnum.GearN + gearValue), gearLightIntensity, false);
         }
 
-
-
         public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, VirtualKeyCode keyCode, bool holdDown)
         {
             AddButtonLightMapping(button, lightOnHold, intensity);
@@ -188,13 +187,17 @@ namespace SBC
             /*if (!ButtonLights.ContainsKey(button))
                 ButtonLights.Add((int)button, new LightProperties(LED, lightOnHold, intensity));
             else*/
-                ButtonLights[(int)button] = new LightProperties(LED, lightOnHold, intensity);
+            if (ButtonLights.Contains((int)button))
+                ButtonLights.Remove((int)button);//to save on later garbage collection
+            ButtonLights[(int)button] = new LightProperties(LED, lightOnHold, intensity);
             
         }
 
         public void AddButtonKeyMapping(ButtonEnum button, VirtualKeyCode keyCode, bool holdDown)
         {
-                ButtonKeys[(int)button] = new KeyProperties(keyCode, holdDown);
+            if (ButtonKeys.Contains((int)button))
+                ButtonKeys.Remove((int)button);//to save on later garbage collection
+            ButtonKeys[(int)button] = new KeyProperties(keyCode, holdDown);
         }
 
         public void AddButtonKeyMapping(ButtonEnum button, VirtualKeyCode modifier, VirtualKeyCode keyCode, bool holdDown)
@@ -405,8 +408,13 @@ namespace SBC
 			}
 			
 			CheckStateChanged(buf);
+            Array.Copy(buf, 0, rawControlData, 0, readByteCount);
+
+            //moved this section out of CheckStateChanged since we want this to go off after the data from buf has been copied over to rawControlData
+			if ((Enum.GetValues(typeof(ButtonEnum)).Length > 0) && (this.ButtonStateChanged != null))
+				ButtonStateChanged(this,stateChangedArray);
 			
-			Array.Copy(buf, 0, rawControlData, 0, readByteCount);
+
 			//Console.WriteLine(ConvertToHex(rawControlData, rawControlData.Length));
 			pollTimer.Start();
 		}
@@ -437,9 +445,10 @@ namespace SBC
 		/// <param name="buf">Raw data buffer retrieved from the controller</param>
 		private void CheckStateChanged(byte[] buf) {
 			ButtonEnum[] values = (ButtonEnum[]) Enum.GetValues(typeof(ButtonEnum));
-			ButtonState[] stateChangedArray = new ButtonState[values.Length];
+			stateChangedArray = new ButtonState[values.Length];
             bool updateLights = false;
-			for(int i = 0; i < values.Length; i++) {
+			for(int i = 0; i < values.Length; i++) 
+            {
 				ButtonMasks.ButtonMask mask = ButtonMasks.MaskList[(int) values[i]];
 				
 				ButtonState state = new ButtonState();
@@ -509,10 +518,6 @@ namespace SBC
 			if (updateLights)
 				RefreshLEDState();
 
-			if ((stateChangedArray.Length > 0) && (this.ButtonStateChanged != null)) {
-				ButtonStateChanged(this,stateChangedArray);
-
-			}
 		}
 		
 		/// <summary>
