@@ -47,17 +47,67 @@ using namespace System::Collections;
 using namespace System::IO;
 using namespace System::Text::RegularExpressions;
 
-int baseLineIntensity = 1;//just an average value for LED intensity
-int emergencyLightIntensity = 15;//for stuff like eject,cockpit Hatch,Ignition, and Start
 bool jumpPressed = false;
 bool stopPressed = false;//used in special handling of left pedal
 int  pedalTriggerLevel = 50;
-int zoomState = -2;//used in special handling of gear lever for zooming
 bool performingAlphaStrike =false;
-int thumbstickDeadZone = 20;
+int thumbstickDeadZone =20;
+bool inverseThumbStick = false;
+float maxZoomMultiplier = 1.5;//used for integrating thumbstick into zooming system
 
 #include "joystick.h"//having issues with this, it won't find this in debug mode unless I use an explicit directory
 int comShift = 0;
+
+
+void parseINIFile(String ^ filePath,Hashtable^ HOH)
+{
+	try
+	{
+		// Create an instance of StreamReader to read from a file.
+		// The using statement also closes the StreamReader.
+		StreamReader^ sr = gcnew StreamReader(filePath);
+		String^ line;
+		// Read and display lines from the file until the end of
+		// the file is reached.
+		String ^ group;
+		while ((line = sr->ReadLine()) != nullptr)
+		{
+			String^ category	= "\\[(.*)]"; 
+			String^ entry		= "([a-zA-Z0-9_.]*)[\t]*=[\t]*([a-zA-Z0-9_.]*)";//need to figure out how to get standard system for this, i.e. \w \s working for visual c++
+			String^ comments	= ";.*";//remove everything after semicolon
+
+			line = Regex::Replace(line,comments,"");
+			Match^ match = Regex::Match(line,category);
+			if(match->Success)
+			{
+				group = match->Groups[1]->Value->ToUpper();
+				if(!HOH->Contains(group))
+					HOH[group] = gcnew ::Hashtable();
+			}
+			else
+			{
+				Match^ match = Regex::Match(line,entry,RegexOptions::ECMAScript);
+				if(match->Success)
+				{
+					String ^ button = match->Groups[1]->Value->ToUpper();//make everything uppercase to ignore case
+					String ^ keyValue  = match->Groups[2]->Value->ToUpper();
+					String ^ mystery  = match->Groups[3]->Value->ToUpper();
+
+//					if(ButtonsHash->Contains(button))//removed this line for generalizability
+						((Hashtable ^)HOH[group])[button] = keyValue;
+				}
+			}
+		}
+		sr->Close();
+	}
+	catch (Exception^ e)
+	{
+		// Let the user know what went wrong.
+		Console::WriteLine(e->Message);
+		Sleep(10000);
+		exit(-1);
+	}
+}
 
 void updatePOVhat(SBC::SteelBattalionController^ controller)
 {
@@ -231,19 +281,26 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 			}
 		}
 	}
+	if (stateChangedArray[(int) SBC::ButtonEnum::ToggleBufferMaterial]->changed) 
+	{
+			controller->sendKeyPress(SBC::VirtualKeyCode::OEM_COMMA);
+			controller->sendKeyPress(SBC::VirtualKeyCode::OEM_PERIOD);
+	}
+
 }
 
 
 int main(array<System::String ^> ^args)
 {
 joystick ^ joystick1 = gcnew joystick;
-int lastGearValue;
 bool lastResetValue;
 bool currentResetValue;
 Hashtable^ ButtonsHash	=	gcnew ::Hashtable();
 Hashtable^ KeysHash		=	gcnew ::Hashtable();//hash table of all valid keys to map to
 Hashtable^ HOH			=	gcnew ::Hashtable();//hash of hashes
+Hashtable^ programSettings = gcnew ::Hashtable();
 SBC::SteelBattalionController^ controller;
+int inverseThumbStickMultiplier;
 
 // Initialize the controller
 controller = gcnew SBC::SteelBattalionController();
@@ -284,69 +341,45 @@ for each(Object^ button in Enum::GetValues(SBC::ButtonEnum::typeid))
 }
 fclose(buttonStream);
 
-
-try
+::parseINIFile("SB64.ini",programSettings);
+if(programSettings->Contains("FILELOCATION"))
 {
-    // Create an instance of StreamReader to read from a file.
-    // The using statement also closes the StreamReader.
-    StreamReader^ sr = gcnew StreamReader("MW4.ini");
-    String^ line;
-    // Read and display lines from the file until the end of
-    // the file is reached.
-	String ^ group;
-    while ((line = sr->ReadLine()) != nullptr)
-    {
-		String^ category	= "\\[(.*)]"; 
-		String^ entry		= "([a-zA-Z0-9_]*)[\f\n\r\t\v]*=[\f\n\r\t\v]*([a-zA-Z0-9_]*)";//need to figure out how to get standard system for this, i.e. \w \s working for visual c++
-		String^ comments	= ";.*";//remove everything after semicolon
-
-		line = Regex::Replace(line,comments,"");
-		Match^ match = Regex::Match(line,category);
-		if(match->Success)
-		{
-			group = match->Groups[1]->Value->ToUpper();
-			if(!HOH->Contains(group))
-				HOH[group] = gcnew ::Hashtable();
-		}
-		else
-		{
-			Match^ match = Regex::Match(line,entry,RegexOptions::ECMAScript);
-			if(match->Success)
-			{
-				String ^ button = match->Groups[1]->Value->ToUpper();//make everything uppercase to ignore case
-				String ^ keyValue  = match->Groups[2]->Value->ToUpper();
-				String ^ mystery  = match->Groups[3]->Value->ToUpper();
-
-				if(ButtonsHash->Contains(button))
-					((Hashtable ^)HOH[group])[button] = keyValue;
-				int blah = 1;
-			}
-		}
-    }
-    sr->Close();
+	::Hashtable ^ mainHash = (::Hashtable ^)programSettings["FILELOCATION"];
+	if(mainHash->Contains("LOADFILE"))
+	{
+		::String ^ fileName = (String ^) mainHash["LOADFILE"];
+		::parseINIFile(fileName,HOH);
+	}
+	else
+	{
+		printf("COULDN'T find LOADFILE parameter of [FILELOCATION] under SB64.ini\n");
+		printf("SIMPLE EXAMPLE file :\n\n[FileLocation]\nloadFile=MW4.ini\n");
+		Sleep(10000);
+		exit(-1);
+	}
 }
-catch (Exception^ e)
+
+   
+if(HOH->Contains("GENERAL"))
 {
-    // Let the user know what went wrong.
-    Console::WriteLine("The file MW4.ini could not be read:");
-    Console::WriteLine(e->Message);
-	Sleep(2000);
-	exit(-1);
+	::Hashtable ^ general = (::Hashtable ^)HOH["GENERAL"];
+	if(general->Contains("THUMBSTICKDEADZONE"))
+		thumbstickDeadZone =	System::Convert::ToInt32(general["THUMBSTICKDEADZONE"]);
+	if(general->Contains("MAXZOOMMULTIPLIER"))
+		maxZoomMultiplier =		System::Convert::ToDouble(general["MAXZOOMMULTIPLIER"]);
+	if(general->Contains("PEDALTRIGGERLEVEL"))
+		pedalTriggerLevel =		System::Convert::ToInt32(general["PEDALTRIGGERLEVEL"]);
+	if(general->Contains("INVERSETHUMBSTICK"))
+		inverseThumbStick =		System::Convert::ToBoolean(general["INVERSETHUMBSTICK"]);
 }
 
 
-/*
-//set all buttons by default to light up only when you press them down
-for(int i=3;i<33;i++)
-{
-		controller->AddButtonLightMapping((SBC::ButtonEnum)(i),true,baseLineIntensity);
-}*/
 
 //SET toggle state
 if(HOH->Contains("TOGGLELIGHTS"))
 for each(::Object ^ button in ((::Hashtable ^)HOH["TOGGLELIGHTS"])->Keys)
 	{
-		controller->AddButtonLightMapping((SBC::ButtonEnum)ButtonsHash[button],false,emergencyLightIntensity);
+		controller->AddButtonLightMapping((SBC::ButtonEnum)ButtonsHash[button],false,0);
 	}
 //SET light intensity
 if(HOH->Contains("LIGHTVALUES"))
@@ -393,7 +426,11 @@ for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONMODIFIERS"])->Keys)
 //set this manually as it is manipulated within loop
 controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyMainWeapon,SBC::VirtualKeyCode::DELETE_key,false);//had to rename delete to delete_key because delete is reserved
 controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyFire,SBC::VirtualKeyCode::RETURN,false);//had to rename delete to delete_key because delete is reserved
-   
+
+if(::inverseThumbStick)
+	inverseThumbStickMultiplier = 1;
+else
+	inverseThumbStickMultiplier = -1;
 
  Console::WriteLine(L"Welcome to Steel Batallion 64");
  Console::WriteLine(L"Leave this running while you play");
@@ -408,11 +445,19 @@ controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyFire,SBC::VirtualKeyCod
 
 	updatePOVhat(controller);//updates POVhat, and sends appropriate keypress downs and ups depending on gear lever and thumbstick position
 		
+	float zoomMultiplier;
+	int zoomLever;
+	if(controller->GearLever > 0)
+		zoomLever = controller->GearLever+1;
+	else
+		zoomLever = abs(controller->GearLever);
+
+	zoomMultiplier = (zoomLever/6.0) * ::maxZoomMultiplier;//want to start at a zoom level of 1
 
 	if(controller->GearLever > -2)//reverse
 	{
-		joystick1->setAxis(1,controller->AimingY-controller->SightChangeY);
-		joystick1->setAxis(3,controller->RotationLever+controller->SightChangeX);
+		joystick1->setAxis(1,controller->AimingY+ inverseThumbStickMultiplier*(zoomMultiplier*controller->SightChangeY) );
+		joystick1->setAxis(3,controller->RotationLever+(zoomMultiplier*controller->SightChangeX) );
 	}
 	else
 	{
