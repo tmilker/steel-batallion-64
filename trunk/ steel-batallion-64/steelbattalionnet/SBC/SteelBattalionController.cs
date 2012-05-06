@@ -43,6 +43,16 @@ using WindowsInput;
 
 namespace SBC
 {
+    public enum POVdirection
+    {
+        CENTER,
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    }
+        
+
     public struct LightProperties
     {
         public ControllerLEDEnum LED;
@@ -109,6 +119,7 @@ namespace SBC
 
         public delegate void RawDataDelegate(SteelBattalionController controller, byte[] arr);
 		public event RawDataDelegate RawData;
+        public POVdirection POVhat = POVdirection.CENTER;
 
 		UsbEndpointReader reader = null;
 		UsbEndpointWriter writer = null;
