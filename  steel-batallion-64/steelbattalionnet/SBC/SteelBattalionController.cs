@@ -205,6 +205,12 @@ namespace SBC
             ButtonKeys[(int)button] = new KeyProperties(modifier,keyCode, holdDown);
         }
 
+        public VirtualKeyCode GetButtonKey(ButtonEnum button)
+        {
+            KeyProperties value = (KeyProperties)(ButtonKeys[(int)button]);
+            return value.keyCode1;
+        }
+
         private ControllerLEDEnum GetLightForButton(ButtonEnum button)
         {
             int buttonNumber =(int)button;

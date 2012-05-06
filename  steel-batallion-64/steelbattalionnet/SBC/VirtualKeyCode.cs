@@ -231,7 +231,7 @@ namespace SBC
         /// <summary>
         /// DEL key
         /// </summary>
-        DELETE = 0x2E,
+        DELETE_key = 0x2E,
 
         /// <summary>
         /// HELP key
