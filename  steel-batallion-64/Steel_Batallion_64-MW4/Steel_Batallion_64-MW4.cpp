@@ -54,10 +54,71 @@ bool stopPressed = false;//used in special handling of left pedal
 int  pedalTriggerLevel = 50;
 int zoomState = -2;//used in special handling of gear lever for zooming
 bool performingAlphaStrike =false;
+int thumbstickDeadZone = 20;
 
 #include "joystick.h"//having issues with this, it won't find this in debug mode unless I use an explicit directory
 int comShift = 0;
 
+void updatePOVhat(SBC::SteelBattalionController^ controller)
+{
+	SBC::POVdirection lastDirection = controller->POVhat;
+
+	if(( (::abs(controller->SightChangeX) > ::thumbstickDeadZone) || (::abs(controller->SightChangeY) > ::thumbstickDeadZone) ) && (controller->GearLever == -2) )//reverse)
+	{
+		if(::abs(controller->SightChangeX) > ::abs(controller->SightChangeY))
+			if(controller->SightChangeX <0)
+				controller->POVhat = SBC::POVdirection::LEFT;
+			else
+				controller->POVhat = SBC::POVdirection::RIGHT;
+		else
+			if(controller->SightChangeY <0)
+				controller->POVhat = SBC::POVdirection::DOWN;
+			else
+				controller->POVhat = SBC::POVdirection::UP;
+
+	}
+	else
+	{
+		controller->POVhat = SBC::POVdirection::CENTER;	
+	}
+
+	if(lastDirection != controller->POVhat)
+	{
+		switch(lastDirection)
+		{
+			case SBC::POVdirection::LEFT:
+				controller->sendKeyUp(SBC::VirtualKeyCode::LEFT);
+				break;
+			case SBC::POVdirection::RIGHT:
+				controller->sendKeyUp(SBC::VirtualKeyCode::RIGHT);
+				break;
+			case SBC::POVdirection::DOWN:
+				controller->sendKeyUp(SBC::VirtualKeyCode::VK_I);
+				break;
+			case SBC::POVdirection::UP:
+				controller->sendKeyUp(SBC::VirtualKeyCode::VK_M);
+				break;
+		}
+	}
+	else
+	{
+		switch(controller->POVhat)
+		{
+			case SBC::POVdirection::LEFT:
+				controller->sendKeyDown(SBC::VirtualKeyCode::LEFT);
+				break;
+			case SBC::POVdirection::RIGHT:
+				controller->sendKeyDown(SBC::VirtualKeyCode::RIGHT);
+				break;
+			case SBC::POVdirection::DOWN:
+				controller->sendKeyDown(SBC::VirtualKeyCode::VK_I);
+				break;
+			case SBC::POVdirection::UP:
+				controller->sendKeyDown(SBC::VirtualKeyCode::VK_M);
+				break;
+		}
+	}
+}
 
 void evaluateModifiableButton(SBC::SteelBattalionController^ controller,SBC::ButtonEnum toggleButton,SBC::ButtonEnum mainButton,SBC::VirtualKeyCode state1,SBC::VirtualKeyCode state2)
 {
@@ -343,11 +404,24 @@ controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyFire,SBC::VirtualKeyCod
 
 	//printf("%s\n",controller->GetBinaryBuffer(4,6));
 	joystick1->setAxis(0,controller->AimingX);
-	joystick1->setAxis(1,controller->AimingY+controller->SightChangeY);
 
 
-	joystick1->setAxis(2,-1*(controller->RightPedal - controller->MiddlePedal));
-	joystick1->setAxis(3,controller->RotationLever+controller->SightChangeX);
+	updatePOVhat(controller);//updates POVhat, and sends appropriate keypress downs and ups depending on gear lever and thumbstick position
+		
+
+	if(controller->GearLever > -2)//reverse
+	{
+		joystick1->setAxis(1,controller->AimingY-controller->SightChangeY);
+		joystick1->setAxis(3,controller->RotationLever+controller->SightChangeX);
+	}
+	else
+	{
+		joystick1->setAxis(1,controller->AimingY);//pitch up/down
+		joystick1->setAxis(3,controller->RotationLever);//torso twist
+	}
+
+
+	joystick1->setAxis(2,-1*(controller->RightPedal - controller->MiddlePedal));//throttle
 	
 	
 	evaluateDualLeftPedal(controller,SBC::VirtualKeyCode::VK_J,SBC::VirtualKeyCode::VK_1);
