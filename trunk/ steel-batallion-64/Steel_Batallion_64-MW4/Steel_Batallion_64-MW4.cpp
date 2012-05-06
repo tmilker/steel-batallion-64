@@ -53,10 +53,26 @@ bool jumpPressed = false;
 bool stopPressed = false;//used in special handling of left pedal
 int  pedalTriggerLevel = 50;
 int zoomState = -2;//used in special handling of gear lever for zooming
+bool performingAlphaStrike =false;
 
 #include "joystick.h"//having issues with this, it won't find this in debug mode unless I use an explicit directory
 int comShift = 0;
 
+
+void evaluateModifiableButton(SBC::SteelBattalionController^ controller,SBC::ButtonEnum toggleButton,SBC::ButtonEnum mainButton,SBC::VirtualKeyCode state1,SBC::VirtualKeyCode state2)
+{
+	//deal with RightJoyMainWeapon and firing groups 3/4
+	if(controller->GetButtonState((int)toggleButton))//up position
+	{
+		if((int)controller->GetButtonKey(mainButton) == (int)state1)
+			controller->AddButtonKeyMapping(mainButton,state2,false);//had to rename delete to delete_key because delete is reserved
+	}
+	else
+	{
+		if(controller->GetButtonKey(mainButton) == state2)
+			controller->AddButtonKeyMapping(mainButton,state1,false);
+	}
+}
 
 void evaluateDualLeftPedal(SBC::SteelBattalionController^ controller,SBC::VirtualKeyCode jumpKey,SBC::VirtualKeyCode stopKey)
 {
@@ -137,7 +153,7 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 					controller->SetLEDState((SBC::ControllerLEDEnum)(i+1),15,true);
 					Sleep(10);
 					controller->SetLEDState((SBC::ControllerLEDEnum)(i+1),0,true);
-					SBC::VirtualKeyCode virtualKey = (SBC::VirtualKeyCode)((int)SBC::VirtualKeyCode::F1+(i-startingValue));
+					SBC::VirtualKeyCode virtualKey = (SBC::VirtualKeyCode)((int)SBC::VirtualKeyCode::F1+(i-startingValue+5));
 					SBC::ButtonEnum button = (SBC::ButtonEnum) i;
 					controller->AddButtonKeyMapping(button,virtualKey,false);
 				}
@@ -149,7 +165,7 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 					controller->SetLEDState((SBC::ControllerLEDEnum)(i+1),15,true);
 					Sleep(10);
 					controller->SetLEDState((SBC::ControllerLEDEnum)(i+1),0,true);//lights are shifted by 1 compared to buttons
-					controller->AddButtonKeyMapping((SBC::ButtonEnum) i,(SBC::VirtualKeyCode)((int)SBC::VirtualKeyCode::F1+(i-startingValue+5)),false);
+					controller->AddButtonKeyMapping((SBC::ButtonEnum) i,(SBC::VirtualKeyCode)((int)SBC::VirtualKeyCode::F1+(i-startingValue)),false);
 				}
 			}
 		}
@@ -312,8 +328,11 @@ for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONMODIFIERS"])->Keys)
 			controller->AddButtonKeyMapping(buttonInput,(SBC::VirtualKeyCode)modifierKey,(SBC::VirtualKeyCode)originalKey,false);//false means don't send separate keydown/keyup commands
 		}
 	}
-   
 
+//set this manually as it is manipulated within loop
+controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyMainWeapon,SBC::VirtualKeyCode::DELETE_key,false);//had to rename delete to delete_key because delete is reserved
+controller->AddButtonKeyMapping(SBC::ButtonEnum::RightJoyFire,SBC::VirtualKeyCode::RETURN,false);//had to rename delete to delete_key because delete is reserved
+   
 
  Console::WriteLine(L"Welcome to Steel Batallion 64");
  Console::WriteLine(L"Leave this running while you play");
@@ -340,6 +359,25 @@ for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONMODIFIERS"])->Keys)
 		controller->TestLEDs(1);//reset lights
 	}
 	lastResetValue = currentResetValue;
+
+
+	evaluateModifiableButton(controller,SBC::ButtonEnum::ToggleFilterControl,SBC::ButtonEnum::RightJoyMainWeapon,SBC::VirtualKeyCode::PRIOR,SBC::VirtualKeyCode::DELETE_key);
+
+	if(!controller->GetButtonState((int)SBC::ButtonEnum::RightJoyFire) && ::performingAlphaStrike)//we were performing alphastrike and now we're not
+		::performingAlphaStrike = false;
+
+	if(controller->GetButtonState((int)SBC::ButtonEnum::ToggleOxygenSupply))
+		if(controller->GetButtonState((int)SBC::ButtonEnum::RightJoyFire) && !::performingAlphaStrike)
+		{
+			controller->sendKeyPress(SBC::VirtualKeyCode::INSERT);//group1
+			controller->sendKeyPress(SBC::VirtualKeyCode::HOME);//group2
+			controller->sendKeyPress(SBC::VirtualKeyCode::PRIOR);//group3
+			controller->sendKeyPress(SBC::VirtualKeyCode::DELETE_key);//group4
+			controller->sendKeyPress(SBC::VirtualKeyCode::END);//group5
+			controller->sendKeyPress(SBC::VirtualKeyCode::NEXT);//group6
+			::performingAlphaStrike = true;
+		}
+
 	if(joystick1->sendBuffer()<1)
 	{
 		printf("ERROR sending joystick1 values");
