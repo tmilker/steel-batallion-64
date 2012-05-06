@@ -49,10 +49,68 @@ using namespace System::Text::RegularExpressions;
 
 int baseLineIntensity = 1;//just an average value for LED intensity
 int emergencyLightIntensity = 15;//for stuff like eject,cockpit Hatch,Ignition, and Start
+bool jumpPressed = false;
+bool stopPressed = false;//used in special handling of left pedal
+int  pedalTriggerLevel = 50;
+int zoomState = -2;//used in special handling of gear lever for zooming
 
 #include "joystick.h"//having issues with this, it won't find this in debug mode unless I use an explicit directory
 int comShift = 0;
 
+
+void evaluateDualLeftPedal(SBC::SteelBattalionController^ controller,SBC::VirtualKeyCode jumpKey,SBC::VirtualKeyCode stopKey)
+{
+	if(controller->LeftPedal > pedalTriggerLevel)
+	{
+		//take care of the button logic separately, to be less confusing
+		if(!jumpPressed)//if not currently holding down jump key
+		{
+			if(controller->RightPedal > pedalTriggerLevel || controller->MiddlePedal > pedalTriggerLevel)
+			{
+				controller->sendKeyDown(jumpKey);
+				jumpPressed = true;
+			}
+		}
+		else//jump button was pressed
+		{//adding these so that else if won't get optimized into one statement
+			if(controller->RightPedal < pedalTriggerLevel && controller->MiddlePedal < pedalTriggerLevel)
+			{
+				controller->sendKeyUp(jumpKey);
+				jumpPressed = false;
+			}
+		}
+
+		if(!stopPressed)//if not currently holding down stop key
+		{
+			if(controller->RightPedal < pedalTriggerLevel && controller->MiddlePedal < pedalTriggerLevel)
+			{
+				controller->sendKeyDown(stopKey);//send fullstop command
+				stopPressed = true;
+			}
+		}
+		else//stop button was pressed
+		{
+			if(controller->RightPedal > pedalTriggerLevel || controller->MiddlePedal > pedalTriggerLevel)
+			{
+				controller->sendKeyUp(stopKey);
+				stopPressed = false;
+			}
+		}
+	}
+	else
+	{
+		if(stopPressed)
+		{
+			controller->sendKeyUp(stopKey);
+			stopPressed = false;
+		}
+		if(::jumpPressed)
+		{
+			controller->sendKeyUp(jumpKey);
+			::jumpPressed = false;
+		}
+	}
+}
 
 //this seems to work slowly, I'm not sure why.
 static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ controller, array<SBC::ButtonState ^> ^ stateChangedArray) 
@@ -272,10 +330,9 @@ for each(::Object ^ button in ((::Hashtable ^)HOH["BUTTONMODIFIERS"])->Keys)
 	joystick1->setAxis(2,-1*(controller->RightPedal - controller->MiddlePedal));
 	joystick1->setAxis(3,controller->RotationLever+controller->SightChangeX);
 	
-	if(controller->RightPedal > 20 || controller->MiddlePedal > 20)
-		controller->sendKeyDown(SBC::VirtualKeyCode::VK_J);
-
-		
+	
+	evaluateDualLeftPedal(controller,SBC::VirtualKeyCode::VK_J,SBC::VirtualKeyCode::VK_1);
+				
 
 	currentResetValue = controller->GetButtonState((int)SBC::ButtonEnum::ToggleFuelFlowRate);
 	if(currentResetValue != lastResetValue && currentResetValue)

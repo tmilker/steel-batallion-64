@@ -490,6 +490,7 @@ namespace SBC
                         GearLightsRefresh((int)unchecked((sbyte)buf[25]));//copied this code from GearLever accessor, changed it since we need ot
                         updateLights = true;
                     }
+                    //check button - light mapping
 					if(ButtonLights.ContainsKey(i))
 					{
 						updateLights = true;
