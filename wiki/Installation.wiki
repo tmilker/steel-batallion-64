@@ -4,9 +4,9 @@
 
 Installation involves a few steps.  
 Downloading and installing prerequisites, 
-Installing 3 standard PPJoy Virtual Joysticks.
+Installing a PPJoy Virtual Joysticks.
 Plugging in the Steel Batallion controller and installing the drivers.
-Running the Steel-Batallion-64 executable.
+Running the Steel-Batallion-64-MW4 executable.
 
 
 = Details =
@@ -16,39 +16,19 @@ Here is a synopsis of the video.  (In case it doesn't work)
 Download the Steel-Batallion-64 zip file from this site:
 [http://code.google.com/p/steel-batallion-64/downloads/detail?name=Steel-Batallion-64_1.0.1.zip&can=2&q=]
 
-Extract the zip file and go on and extract LibUSB64.zip and Steel-Batallion-64.zip.  The contents of the folder should look like the following:
-
-05/01/2012  01:12 AM    DIR          Drivers
-05/01/2012  01:12 AM           129,161 LibUSB64.zip
-05/01/2012  01:12 AM         2,344,495 LibUsbDotNet_Setup.2.2.8.exe
-05/01/2012  01:12 AM         2,178,419 ppjoysetup-0-8-4-6.exe
-05/01/2012  01:13 AM    DIR          Steel-Batallion-64
-05/01/2012  01:12 AM         8,520,895 Steel-Batallion-64.zip
+Extract the zip file.  
 
 INSTALLATION ORDER MATTERS!  OR at least you'll get less errors that way.  Windows 64-bit versions require Kernel Mode Driver Certification.  They will complain if you don't have it.  Neither PPJoy nor LibUSB.NET seem to have satisfying credentials as far as Windows is concerned.  In order to bypass this hurdle, you have to have Windows in Test Mode.  The PPJoy installer takes this into account and the first time you open it (if you're not in test mode) it will give you a warning, and after clicking OK, it runs the cmd command to put Windows in Test Mode.  The second prompt comes up, press OK, then the computer will restart.
 
-Double click on PPJoy and continue the installation.  Go on and open up the PPJoy configure joysticks panel after the installation is complete.  Add 3 virtual joysticks by pressing Add,Add
+Double click on PPJoy and continue the installation.  Go on and open up the PPJoy configure joysticks panel after the installation is complete.  Add a virtual joysticks by pressing Add,Add.
 
 Close everything out and install LibUsbDotNet_Setup.2.2.8.  Nothing special here.  If you had tried to install this before installing PPJoy and were not in Windows Test Mode then an error would show up over your Steel Batallion controller when you plugged it in
 
 Plug in your Steel Batallion Controller let it Install, Open up Device Manager and right click on the Steel Batallion Controller and select update drivers, select browse for driver and select the Drivers folder within the Steel Batallion Controller file.
 
-You should now have everything you need to run the program, go into the Executables folder and run Steel-Batallion-64.exe If you have the joystick plugged in and everything is working, then all the lights on the joystick should flash 5 times.  
+You should now have everything you need to run the program, go into the Executables folder and run Steel-Batallion-64-MW4.exe If you have the joystick plugged in and everything is working, then all the lights on the joystick should flash 5 times.  
 
 Calibration:
-After you verify that the joystick is working, go into set up usb joysticks and calibrate the different axis.  Here are the Axis mapping
-
-joystick1, axis 1 = Right Joystick X
-joystick1, axis 2 = Right Joystick Y
-
-joystick2, axis 1 = Right Pedal
-joystick2, axis 2 = Middle Pedal
-joystick2, axis 3 = Left Pedal
-joystick2, axis 4 = Tuner Dial
-
-joystick3, axis 1 = Left Stick SightChangeX
-joystick3, axis 2 = Left Stick SightChangeY
-joystick3, axis 3 = Left Stick
-joystick3, axis 4 = Gear Lever
+4 axes are mapped even though there are 10 available MW4.exe requires you to install 3 PPJoy joysticks as it maps all 10 axes across 3 virtual joysticks.  Windows only supports a maximum 8 axes 32 button joystick.
 
 That should be it, e-mail me if you have any problems.
