@@ -14,7 +14,7 @@ Running the Steel-Batallion-64 executable.
 Here is a synopsis of the video.  (In case it doesn't work)
 
 Download the Steel-Batallion-64 zip file from this site:
-[http://steel-batallion-64.googlecode.com/files/Steel-Batallion-64-1.0.0.zip]
+[http://steel-batallion-64.googlecode.com/files/Steel-Batallion-64-1.0.1.zip]
 
 Extract the zip file and go on and extract LibUSB64.zip and Steel-Batallion-64.zip.  The contents of the folder should look like the following:
 
@@ -52,4 +52,3 @@ joystick3, axis 3 = Left Stick
 joystick3, axis 4 = Gear Lever
 
 That should be it, e-mail me if you have any problems.
-
