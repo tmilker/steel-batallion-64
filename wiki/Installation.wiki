@@ -22,7 +22,7 @@ INSTALLATION ORDER MATTERS!  OR at least you'll get less errors that way.  Windo
 
 Double click on PPJoy and continue the installation.  Go on and open up the PPJoy configure joysticks panel after the installation is complete.  Add a virtual joysticks by pressing Add,Add.
 
-Close everything out and install LibUsbDotNet_Setup.2.2.8.  Nothing special here.  If you had tried to install this before installing PPJoy and were not in Windows Test Mode then an error would show up over your Steel Batallion controller when you plugged it in
+Close everything out and install LibUsbDotNet_Setup.2.2.8.  Nothing special here, just SKIP the USB filter section at the end, its not necessary.  If you had tried to install this before installing PPJoy and were not in Windows Test Mode then an error would show up over your Steel Batallion controller when you plugged it in
 
 Plug in your Steel Batallion Controller let it Install, Open up Device Manager and right click on the Steel Batallion Controller and select update drivers, select browse for driver and select the Drivers folder within the Steel Batallion Controller file.
 
