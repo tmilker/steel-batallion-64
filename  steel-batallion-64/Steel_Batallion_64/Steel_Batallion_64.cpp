@@ -40,8 +40,10 @@
 #include <windows.h>
 
 #include <winioctl.h>
-
+#using	<..\steelbattalionnet\SBC\bin\Release\SBC.dll>
 using namespace System;
+using namespace SBC;
+
 
 int baseLineIntensity = 1;//just an average value for LED intensity
 int emergencyLightIntensity = 15;//for stuff like eject,cockpit Hatch,Ignition, and Start
@@ -183,6 +185,7 @@ controller->setGearLights(true,10);
 	joysticks[0]->setAxis(0,controller->AimingX);
 	joysticks[0]->setAxis(1,controller->AimingY);
 
+	
 
 	joysticks[1]->setAxis(0,controller->RightPedal);
 	joysticks[1]->setAxis(1,controller->MiddlePedal);

@@ -176,10 +176,6 @@
 			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
 			MinFrameworkVersion="131072"
 		/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{E5790658-AC61-4B27-91B7-AEA2CAF37F9C}"
-			RelativePathToProject=".\steelbattalionnet\SBC\SBC.csproj"
-		/>
 	</References>
 	<Files>
 		<Filter

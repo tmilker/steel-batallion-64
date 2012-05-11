@@ -57,10 +57,4 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="lgpl-3.0.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SBC\SBC.csproj">
-      <Project>{E5790658-AC61-4B27-91B7-AEA2CAF37F9C}</Project>
-      <Name>SBC</Name>
-    </ProjectReference>
-  </ItemGroup>
 </Project>
