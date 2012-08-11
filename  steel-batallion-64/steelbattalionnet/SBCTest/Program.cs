@@ -29,11 +29,78 @@
  *********************************************************************************/
 
 using System;
+using System.IO;
+using System.Reflection;
+using System.CodeDom.Compiler;
+using Microsoft.CSharp;
+using System.Collections.Generic;
+
 
 namespace SBCTest {
+    public class NotDynamicClass
+    {
+        private readonly List<string> values = new List<string>();
+
+        public void AddValue(string value)
+        {
+            values.Add(value);
+        }
+
+        public void ProcessValues()
+        {
+            foreach (var item in values)
+            {
+                Console.WriteLine(item);
+            }
+        }
+    }
+
 	class Program {
 		public static void Main(string[] args) {
 			// Initialize the controller
+        var provider = CSharpCodeProvider.CreateProvider("c#");
+        CompilerParameters parameters = new CompilerParameters();
+        parameters.GenerateExecutable = true;
+
+        var assemblyContainingNotDynamicClass = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
+        parameters.ReferencedAssemblies.Add(assemblyContainingNotDynamicClass);
+        // Add available assemblies - this should be enough for the simplest
+        // applications.
+        foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            parameters.ReferencedAssemblies.Add(asm.Location);
+        }
+        var results = provider.CompileAssemblyFromSource(parameters, new[] 
+        { 
+@"
+namespace SBCTest {
+public class DynamicClass
+{
+    public static void Main()
+    {
+        NotDynamicClass @class = new NotDynamicClass();
+        @class.AddValue(""One"");
+        @class.AddValue(""Two"");
+        @class.ProcessValues();
+    }
+}
+}
+"
+        });
+        if (results.Errors.Count > 0)
+        {
+            foreach (var error in results.Errors)
+            {
+                Console.WriteLine(error);
+            }
+        }
+        else
+        {
+            var t = results.CompiledAssembly.GetType("SBCTest.DynamicClass");
+            t.GetMethod("Main").Invoke(null, null);
+        }
+    
+            
 			SBC.SteelBattalionController controller = new SBC.SteelBattalionController();
 			controller.Init(50);
 			
