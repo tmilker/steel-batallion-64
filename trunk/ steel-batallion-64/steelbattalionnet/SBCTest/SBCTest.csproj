@@ -39,6 +39,10 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="LibUsbDotNet, Version=2.2.8.104, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\Program Files\LibUsbDotNet\LibUsbDotNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -56,5 +60,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="lgpl-3.0.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SBC\SBC.csproj">
+      <Project>{E5790658-AC61-4B27-91B7-AEA2CAF37F9C}</Project>
+      <Name>SBC</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
