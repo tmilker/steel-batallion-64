@@ -29,6 +29,8 @@
  *********************************************************************************/
 
 using System;
+using System.CodeDom.Compiler;
+using Microsoft.CSharp;
 using System.Text;
 using System.Text.RegularExpressions;
 using LibUsbDotNet;
@@ -38,6 +40,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;//used for backgroundworker
 using WindowsInput;
+
 
 
 
