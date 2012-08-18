@@ -38,7 +38,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <windows.h>
-#include <atlstr.h>
+//#include <atlstr.h>
 
 #include <winioctl.h>
 
@@ -443,7 +443,7 @@ else
 	joystick1->setAxis(0,controller->AimingX);
 
 
-	updatePOVhat(controller);//updates POVhat, and sends appropriate keypress downs and ups depending on gear lever and thumbstick position
+	/*updatePOVhat(controller);//updates POVhat, and sends appropriate keypress downs and ups depending on gear lever and thumbstick position
 		
 	float zoomMultiplier;
 	int zoomLever;
@@ -460,16 +460,23 @@ else
 		joystick1->setAxis(3,controller->RotationLever+(zoomMultiplier*controller->SightChangeX) );
 	}
 	else
-	{
+	{*/
 		joystick1->setAxis(1,controller->AimingY);//pitch up/down
 		joystick1->setAxis(3,controller->RotationLever);//torso twist
-	}
+	//}
 
 
 	joystick1->setAxis(2,-1*(controller->RightPedal - controller->MiddlePedal));//throttle
+	joystick1->setAxis(4,controller->SightChangeX);
+	joystick1->setAxis(5,controller->SightChangeY);
+	joystick1->setAxis(6,controller->LeftPedal);
+	joystick1->setAxis(7,controller->GearLever);
+
+	printf("%i\n",controller->SightChangeY);
+
 	
 	
-	evaluateDualLeftPedal(controller,SBC::VirtualKeyCode::VK_J,SBC::VirtualKeyCode::VK_1);
+	//evaluateDualLeftPedal(controller,SBC::VirtualKeyCode::VK_J,SBC::VirtualKeyCode::VK_1);
 				
 
 	currentResetValue = controller->GetButtonState((int)SBC::ButtonEnum::ToggleFuelFlowRate);
