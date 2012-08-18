@@ -43,7 +43,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64&quot;"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\Steel_Batallion_64"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -66,6 +67,7 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
+				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -181,7 +183,7 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\steelbattalionnet\SBC\bin\Release\SBC.dll"
-			AssemblyName="SBC, Version=1.0.4509.30818, processorArchitecture=IA64"
+			AssemblyName="SBC, Version=1.0.4606.2300, processorArchitecture=IA64"
 			MinFrameworkVersion="196613"
 		/>
 	</References>
