@@ -42,6 +42,9 @@
 #include <winioctl.h>
 #using	<..\steelbattalionnet\SBC\bin\Release\SBC.dll>
 using namespace System;
+using namespace System::IO;
+using namespace System::Reflection;
+using namespace System::CodeDom::Compiler;
 using namespace SBC;
 
 
@@ -106,8 +109,20 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 
 int main(array<System::String ^> ^args)
 {
-array<joystick^> ^ joysticks = gcnew array<joystick^>(3);
+array<joystick^> ^ joysticks = gcnew array<joystick^>(1);
 int lastGearValue;
+
+CompilerParameters^ parameters = gcnew CompilerParameters();
+parameters->GenerateExecutable = true;
+
+String^ assemblyContainingNotDynamicClass = Path::GetFileName(Assembly::GetExecutingAssembly()->Location);
+parameters->ReferencedAssemblies->Add(assemblyContainingNotDynamicClass);
+
+for each (Assembly^ assembly in AppDomain::CurrentDomain->GetAssemblies())
+        {
+            parameters->ReferencedAssemblies->Add(assembly->Location);
+        }
+
 
 
 for(int i=0;i<joysticks->Length;i++)
@@ -121,7 +136,7 @@ if(!joysticks[0]->init(L"\\\\.\\PPJoyIOCTL1") < 0)
 	Sleep(2000);
 	exit(1);
 }
-
+/*
 if(!joysticks[1]->init(L"\\\\.\\PPJoyIOCTL2") < 0)
 {
 	printf("Unable to open PPJoy Virtual Joystick 2, check the Game Controllers panel.");
@@ -143,7 +158,7 @@ joysticks[2]->totalButtons = 11;
 SBC::SteelBattalionController^ controller;
 
 
-
+/*
 // Initialize the controller
 controller = gcnew SBC::SteelBattalionController();
 controller->Init(50);
@@ -177,10 +192,10 @@ controller->setGearLights(true,10);
  Console::WriteLine(L"This program will update PPJoy Virtual Joysticks 1 - 3");
  Console::WriteLine(L"Run a one time calibration on each PPJoy Virtual Joystick");
  Console::WriteLine(L"so the Game Controllers panel updates");
-
+*/
  while(1)
  {
-
+/*
 	//printf("%s\n",controller->GetBinaryBuffer(4,6));
 	joysticks[0]->setAxis(0,controller->AimingX);
 	joysticks[0]->setAxis(1,controller->AimingY);
@@ -219,7 +234,7 @@ controller->setGearLights(true,10);
 			break;
 		}
 	}
-	lastGearValue = currentGearValue;
+	lastGearValue = currentGearValue;*/
 	Sleep(50);
  }
 
