@@ -106,7 +106,7 @@ public class DynamicClass
 			
 			// Uncomment if you want to monitor the raw data coming out of the controller
 			//controller.RawData += new SBC.SteelBattalionController.RawDataDelegate(controller_RawData);
-			
+					//set all buttons by default to light up only when you press them down
 			// Add the event handler to monitor button state changed events
 			controller.ButtonStateChanged += new SBC.SteelBattalionController.ButtonStateChangedDelegate(controller_ButtonStateChanged);
 			
