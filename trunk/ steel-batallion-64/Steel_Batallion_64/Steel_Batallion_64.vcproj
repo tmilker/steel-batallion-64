@@ -176,6 +176,11 @@
 			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
 			MinFrameworkVersion="131072"
 		/>
+		<AssemblyReference
+			RelativePath="..\steelbattalionnet\SBC\bin\Release\SBC.dll"
+			AssemblyName="SBC, Version=1.0.4606.2300, processorArchitecture=IA64"
+			MinFrameworkVersion="196613"
+		/>
 	</References>
 	<Files>
 		<Filter

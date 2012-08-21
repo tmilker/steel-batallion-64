@@ -40,11 +40,11 @@
 #include <windows.h>
 
 #include <winioctl.h>
-#using	<..\steelbattalionnet\SBC\bin\Release\SBC.dll>
 using namespace System;
 using namespace System::IO;
 using namespace System::Reflection;
 using namespace System::CodeDom::Compiler;
+using namespace Microsoft::CSharp;
 using namespace SBC;
 
 
@@ -107,23 +107,51 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 }
 
 
+
+
 int main(array<System::String ^> ^args)
 {
 array<joystick^> ^ joysticks = gcnew array<joystick^>(1);
 int lastGearValue;
 
-CompilerParameters^ parameters = gcnew CompilerParameters();
-parameters->GenerateExecutable = true;
+SBC::SteelBattalionController^ controller;
 
+System::CodeDom::Compiler::CodeDomProvider^ provider = CSharpCodeProvider::CreateProvider("c#");
+CompilerParameters^ parameters = gcnew CompilerParameters();
+parameters->GenerateExecutable = false;
+String^ executingLocation = Assembly::GetExecutingAssembly()->Location;
 String^ assemblyContainingNotDynamicClass = Path::GetFileName(Assembly::GetExecutingAssembly()->Location);
-parameters->ReferencedAssemblies->Add(assemblyContainingNotDynamicClass);
+//parameters->ReferencedAssemblies->Add(assemblyContainingNotDynamicClass);
+//parameters->ReferencedAssemblies->Add("..\\Executables\\SBC.dll");
 
 for each (Assembly^ assembly in AppDomain::CurrentDomain->GetAssemblies())
         {
             parameters->ReferencedAssemblies->Add(assembly->Location);
         }
 
+array<String^>^ fileNames = gcnew array<String^>(1);
+fileNames[0] = gcnew String("C:\\Users\\Santiago\\Documents\\Visual Studio 2008\\Projects\\Steel-Batallion-64\\steelbattalionnet\\SBC\\test.cs");
 
+System::CodeDom::Compiler::CompilerResults^ results = provider->CompileAssemblyFromFile(parameters, fileNames);
+
+
+        if (results->Errors->Count > 0)
+        {
+			for each (CompilerError ^ error in results->Errors)
+            {
+				Console::WriteLine(error);
+            }
+        }
+        else
+        {
+array<Object^>^ parameters = gcnew array<Object^>(1);
+//parameters[0] = controller;
+			//System::Type^ t = results->CompiledAssembly->GetType("SBC.DynamicClass");
+			Object^ t = results->CompiledAssembly->CreateInstance("SBC.DynamicClass");
+
+            //t->GetMethod("Main")->Invoke(nullptr,nullptr);
+			t->GetType()->InvokeMember("Main",System::Reflection::BindingFlags::InvokeMethod,nullptr,t,parameters);
+        }        
 
 for(int i=0;i<joysticks->Length;i++)
 {
@@ -136,57 +164,25 @@ if(!joysticks[0]->init(L"\\\\.\\PPJoyIOCTL1") < 0)
 	Sleep(2000);
 	exit(1);
 }
-/*
-if(!joysticks[1]->init(L"\\\\.\\PPJoyIOCTL2") < 0)
-{
-	printf("Unable to open PPJoy Virtual Joystick 2, check the Game Controllers panel.");
-	Sleep(2000);
-	exit(1);
-}
-if(!joysticks[2]->init(L"\\\\.\\PPJoyIOCTL3") < 0)
-{
-	printf("Unable to open PPJoy Virtual Joystick 3, check the Game Controllers panel.");
-	Sleep(2000);
-	exit(1);
-}
+
 
 
 joysticks[0]->totalButtons = 13;
-joysticks[1]->totalButtons = 15;
-joysticks[2]->totalButtons = 11;
-
-SBC::SteelBattalionController^ controller;
 
 
-/*
+
+
+
 // Initialize the controller
-controller = gcnew SBC::SteelBattalionController();
-controller->Init(50);
-
-//set all buttons by default to light up only when you press them down
-for(int i=4;i<4+30;i++)
-{
-	if (i != (int)SBC::ButtonEnum::Eject)//excluding eject since we are going to flash that one
-		controller->AddButtonLightMapping((SBC::ButtonEnum)(i-1),(SBC::ControllerLEDEnum)(i),true,baseLineIntensity);
-}
-
-//add exceptions to intensity
-//controller->AddButtonLightMapping(SBC::ButtonEnum::Eject,SBC::ControllerLEDEnum::EmergencyEject,true,emergencyLightIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::Ignition,SBC::ControllerLEDEnum::Ignition,true,emergencyLightIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::Start,SBC::ControllerLEDEnum::Start,true,emergencyLightIntensity);
-
-//add exceptions to toggle state, lightOnHold = false means to toggle light state when pressed
-controller->AddButtonLightMapping(SBC::ButtonEnum::CockpitHatch,SBC::ControllerLEDEnum::CockpitHatch,false,emergencyLightIntensity);//false means toggle light state
-controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionLineColorChange,SBC::ControllerLEDEnum::LineColorChange,false,baseLineIntensity);
-controller->AddButtonLightMapping(SBC::ButtonEnum::FunctionNightScope,SBC::ControllerLEDEnum::NightScope,false,emergencyLightIntensity);//changed intensity for fun
+//controller = gcnew SBC::SteelBattalionController();
+//controller->Init(50);
 
 
-controller->setGearLights(true,10);
 
 
 // Add the event handler to monitor button state changed events
 //controller->ButtonStateChanged += gcnew SBC::SteelBattalionController::ButtonStateChangedDelegate(controller_ButtonStateChanged);
-
+/*
  Console::WriteLine(L"Welcome to Steel Batallion 64");
  Console::WriteLine(L"Leave this Running While you Play");
  Console::WriteLine(L"This program will update PPJoy Virtual Joysticks 1 - 3");
