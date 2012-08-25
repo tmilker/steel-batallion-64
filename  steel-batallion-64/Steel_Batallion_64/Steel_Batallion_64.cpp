@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <windows.h>
+#include <tchar.h>
 
 #include <winioctl.h>
 using namespace System;
@@ -111,10 +112,12 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 
 int main(array<System::String ^> ^args)
 {
-array<joystick^> ^ joysticks = gcnew array<joystick^>(1);
+array<joystick^> ^ joysticks;
 int lastGearValue;
 
-SBC::SteelBattalionController^ controller;
+Object^ CSharpObject;
+Object^ CSharpResponse;
+
 
 System::CodeDom::Compiler::CodeDomProvider^ provider = CSharpCodeProvider::CreateProvider("c#");
 CompilerParameters^ parameters = gcnew CompilerParameters();
@@ -122,7 +125,7 @@ parameters->GenerateExecutable = false;
 String^ executingLocation = Assembly::GetExecutingAssembly()->Location;
 String^ assemblyContainingNotDynamicClass = Path::GetFileName(Assembly::GetExecutingAssembly()->Location);
 //parameters->ReferencedAssemblies->Add(assemblyContainingNotDynamicClass);
-//parameters->ReferencedAssemblies->Add("..\\Executables\\SBC.dll");
+parameters->ReferencedAssemblies->Add("..\\Executables\\SBC.dll");
 
 for each (Assembly^ assembly in AppDomain::CurrentDomain->GetAssemblies())
         {
@@ -141,29 +144,49 @@ System::CodeDom::Compiler::CompilerResults^ results = provider->CompileAssemblyF
             {
 				Console::WriteLine(error);
             }
+			while(1){Sleep(10);}
         }
         else
         {
-array<Object^>^ parameters = gcnew array<Object^>(1);
-//parameters[0] = controller;
-			//System::Type^ t = results->CompiledAssembly->GetType("SBC.DynamicClass");
-			Object^ t = results->CompiledAssembly->CreateInstance("SBC.DynamicClass");
-
-            //t->GetMethod("Main")->Invoke(nullptr,nullptr);
-			t->GetType()->InvokeMember("Main",System::Reflection::BindingFlags::InvokeMethod,nullptr,t,parameters);
+			array<Object^>^ parameters = gcnew array<Object^>(1);
+			CSharpObject = results->CompiledAssembly->CreateInstance("SBC.DynamicClass");
+			CSharpObject->GetType()->InvokeMember("Initialize",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,nullptr);
         }        
+
+int numJoysticks = (int)CSharpObject->GetType()->InvokeMember("getNumJoysticks",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,nullptr);
+
+ 
+joysticks  = gcnew array<joystick^>(numJoysticks);
 
 for(int i=0;i<joysticks->Length;i++)
 {
 	joysticks[i] = gcnew joystick;
+
+
+	char joystickName[50];
+
+	sprintf(joystickName,"\\\\.\\PPJoyIOCTL%d",i+1);
+
+    // Convert to a wchar_t*
+    // You must first convert to a char * for this to work.
+    size_t origsize = strlen(joystickName) + 1;
+    size_t convertedChars = 0;
+    wchar_t wcstring[50];
+    mbstowcs_s(&convertedChars, wcstring, origsize, joystickName, _TRUNCATE);
+
+	if(!joysticks[0]->init(L"\\\\.\\PPJoyIOCTL1") < 0)
+	//if(!joysticks[i]->init(wcstring) < 0)
+	{
+		printf("Unable to open PPJoy Virtual Joystick 1, check the Game Controllers panel.");
+		Sleep(2000);
+		exit(1);
+	}
+			array<Object^>^ parameters = gcnew array<Object^>(1);
+			parameters[0] = (int) 1;
+int numButtons = (int)CSharpObject->GetType()->InvokeMember("getNumButtons",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
 }
 
-if(!joysticks[0]->init(L"\\\\.\\PPJoyIOCTL1") < 0)
-{
-	printf("Unable to open PPJoy Virtual Joystick 1, check the Game Controllers panel.");
-	Sleep(2000);
-	exit(1);
-}
+
 
 
 
@@ -182,8 +205,9 @@ joysticks[0]->totalButtons = 13;
 
 // Add the event handler to monitor button state changed events
 //controller->ButtonStateChanged += gcnew SBC::SteelBattalionController::ButtonStateChangedDelegate(controller_ButtonStateChanged);
-/*
+
  Console::WriteLine(L"Welcome to Steel Batallion 64");
+ /*
  Console::WriteLine(L"Leave this Running While you Play");
  Console::WriteLine(L"This program will update PPJoy Virtual Joysticks 1 - 3");
  Console::WriteLine(L"Run a one time calibration on each PPJoy Virtual Joystick");
@@ -191,13 +215,24 @@ joysticks[0]->totalButtons = 13;
 */
  while(1)
  {
-/*
-	//printf("%s\n",controller->GetBinaryBuffer(4,6));
-	joysticks[0]->setAxis(0,controller->AimingX);
-	joysticks[0]->setAxis(1,controller->AimingY);
+	for(int i=0;i<numJoysticks;i++)
+	{
+		array<Object^>^ parameters = gcnew array<Object^>(1);
+		parameters[0] = (int) i;
+		int numAxis = (int)CSharpObject->GetType()->InvokeMember("getNumAxis",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
+		for(int j=0;j<numAxis;j++)
+		{
+			parameters = gcnew array<Object^>(2);
+			parameters[0] = (int) i;
+			parameters[1] = (int) j;
 
+			int axisValue = (int)CSharpObject->GetType()->InvokeMember("getAxisValue",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
+			joysticks[i]->setAxis(j,axisValue);
+		}
+	}
+joysticks[0]->setButton(5,1);
 	
-
+/*
 	joysticks[1]->setAxis(0,controller->RightPedal);
 	joysticks[1]->setAxis(1,controller->MiddlePedal);
 	joysticks[1]->setAxis(2,controller->LeftPedal);
