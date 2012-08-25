@@ -174,8 +174,8 @@ for(int i=0;i<joysticks->Length;i++)
     wchar_t wcstring[50];
     mbstowcs_s(&convertedChars, wcstring, origsize, joystickName, _TRUNCATE);
 
-	if(!joysticks[0]->init(L"\\\\.\\PPJoyIOCTL1") < 0)
-	//if(!joysticks[i]->init(wcstring) < 0)
+	//if(!joysticks[0]->init(L"\\\\.\\PPJoyIOCTL1") < 0)
+	if(!joysticks[i]->init(wcstring) < 0)
 	{
 		printf("Unable to open PPJoy Virtual Joystick 1, check the Game Controllers panel.");
 		Sleep(2000);
@@ -230,7 +230,7 @@ joysticks[0]->totalButtons = 13;
 			joysticks[i]->setAxis(j,axisValue);
 		}
 	}
-joysticks[0]->setButton(5,1);
+joysticks[0]->setButton(1,1);
 	
 /*
 	joysticks[1]->setAxis(0,controller->RightPedal);
@@ -266,6 +266,12 @@ joysticks[0]->setButton(5,1);
 		}
 	}
 	lastGearValue = currentGearValue;*/
+	if(joysticks[0]->sendBuffer()<1)
+	{
+		printf("ERROR sending joystick1 values");
+		Sleep(1000);
+		break;
+	}
 	Sleep(50);
  }
 
