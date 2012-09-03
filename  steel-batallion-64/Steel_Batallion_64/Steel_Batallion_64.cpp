@@ -87,6 +87,8 @@ static void controller_ButtonStateChanged(SBC::SteelBattalionController ^ contro
 			int currentLEDState = controller->GetLEDState(SBC::ControllerLEDEnum::LineColorChange);
 			controller->SetLEDState(SBC::ControllerLEDEnum::LineColorChange,(!currentLEDState)*5);
 		}
+		controller->AddButtonLightMapping(SBC::ButtonEnum::Eject,false,15);
+		controller->AddButtonLightMapping(SBC::ButtonEnum::Eject,false,15);
 		// Do specific things when the "Line Color Change" button has a state change
 	}
 
@@ -133,7 +135,16 @@ for each (Assembly^ assembly in AppDomain::CurrentDomain->GetAssemblies())
         }
 
 array<String^>^ fileNames = gcnew array<String^>(1);
-fileNames[0] = gcnew String("C:\\Users\\Santiago\\Documents\\Visual Studio 2008\\Projects\\Steel-Batallion-64\\steelbattalionnet\\SBC\\test.cs");
+//fileNames[0] = gcnew String("C:\\Users\\Santiago\\Documents\\Visual Studio 2008\\Projects\\Steel-Batallion-64\\steelbattalionnet\\SBC\\test.cs");
+if(args->Length ==1)
+	fileNames[0] = gcnew String(args[0]);
+else
+{
+	Console::WriteLine(L"Incorrect number of command line paramters, please input settings c# file");
+	Sleep(3000);
+	exit(1);
+}
+	
 
 System::CodeDom::Compiler::CompilerResults^ results = provider->CompileAssemblyFromFile(parameters, fileNames);
 
@@ -184,13 +195,14 @@ for(int i=0;i<joysticks->Length;i++)
 			array<Object^>^ parameters = gcnew array<Object^>(1);
 			parameters[0] = (int) 1;
 int numButtons = (int)CSharpObject->GetType()->InvokeMember("getNumButtons",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
+joysticks[i]->totalButtons = numButtons;
 }
 
 
 
 
 
-joysticks[0]->totalButtons = 13;
+
 
 
 
@@ -230,48 +242,36 @@ joysticks[0]->totalButtons = 13;
 			joysticks[i]->setAxis(j,axisValue);
 		}
 	}
-joysticks[0]->setButton(1,1);
-	
-/*
-	joysticks[1]->setAxis(0,controller->RightPedal);
-	joysticks[1]->setAxis(1,controller->MiddlePedal);
-	joysticks[1]->setAxis(2,controller->LeftPedal);
-	joysticks[1]->setAxis(3,controller->TunerDial);
 
+	bool setButtons = (bool)CSharpObject->GetType()->InvokeMember("useButtons",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,nullptr);
 
-	joysticks[2]->setAxis(0,controller->SightChangeX);
-	joysticks[2]->setAxis(1,controller->SightChangeY);
-	joysticks[2]->setAxis(2,controller->RotationLever);
-	joysticks[2]->setAxis(3,controller->GearLever);
-
-	int currentGearValue = controller->GearLever;
-
-	if (controller->GetButtonState((int)(SBC::ButtonEnum::Eject)))
-		controller->flashLED(SBC::ControllerLEDEnum::EmergencyEject,3);//flash eject button 3 times
-
-
-	int currentButtonIndex = 0;
-	for(int i=0;i<joysticks->Length;i++)
+	if(setButtons)
 	{
-		for(int j=currentButtonIndex;j<currentButtonIndex+joysticks[i]->totalButtons;j++)
-			joysticks[i]->setButton(j-currentButtonIndex,controller->GetButtonState(j));
+		for(int i=0;i<joysticks->Length;i++)
+		{
+			for(int j=0;j<joysticks[i]->totalButtons;j++)
+			{
+				array<Object^>^ parameters = gcnew array<Object^>(2);
+				parameters[0] = (int) i;
+				parameters[1] = (int) j;
+				bool buttonValue = (bool)CSharpObject->GetType()->InvokeMember("getButtonValue",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
 
-		currentButtonIndex += joysticks[i]->totalButtons;
-
+				joysticks[i]->setButton(j,buttonValue);
+			}
+		}
+	}
+	for(int i=0;i<numJoysticks;i++)
+	{
 		if(joysticks[i]->sendBuffer()<1)
 		{
-			printf("ERROR sending joystick $d values",i);
+			printf("ERROR sending joystick values");
 			Sleep(1000);
 			break;
 		}
 	}
-	lastGearValue = currentGearValue;*/
-	if(joysticks[0]->sendBuffer()<1)
-	{
-		printf("ERROR sending joystick1 values");
-		Sleep(1000);
-		break;
-	}
+	CSharpObject->GetType()->InvokeMember("extraCode",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,nullptr);
+
+
 	Sleep(50);
  }
 
