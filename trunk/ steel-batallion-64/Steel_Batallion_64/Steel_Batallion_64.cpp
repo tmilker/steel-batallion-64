@@ -52,6 +52,12 @@ using namespace SBC;
 int baseLineIntensity = 1;//just an average value for LED intensity
 int emergencyLightIntensity = 15;//for stuff like eject,cockpit Hatch,Ignition, and Start
 
+public ref class Globals abstract sealed {
+public:
+static Object^ CSharpObject;
+};
+
+
 #include "joystick.h"
 
 void setGearShiftLight(SBC::SteelBattalionController ^ controller,bool setNow,int intensity)
@@ -117,8 +123,6 @@ int main(array<System::String ^> ^args)
 array<joystick^> ^ joysticks;
 int lastGearValue;
 
-Object^ CSharpObject;
-Object^ CSharpResponse;
 
 
 System::CodeDom::Compiler::CodeDomProvider^ provider = CSharpCodeProvider::CreateProvider("c#");
@@ -160,11 +164,11 @@ System::CodeDom::Compiler::CompilerResults^ results = provider->CompileAssemblyF
         else
         {
 			array<Object^>^ parameters = gcnew array<Object^>(1);
-			CSharpObject = results->CompiledAssembly->CreateInstance("SBC.DynamicClass");
-			CSharpObject->GetType()->InvokeMember("Initialize",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,nullptr);
+			Globals::CSharpObject = results->CompiledAssembly->CreateInstance("SBC.DynamicClass");
+			Globals::CSharpObject->GetType()->InvokeMember("Initialize",System::Reflection::BindingFlags::InvokeMethod,nullptr,Globals::CSharpObject,nullptr);
         }        
 
-int numJoysticks = (int)CSharpObject->GetType()->InvokeMember("getNumJoysticks",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,nullptr);
+int numJoysticks = (int)Globals::CSharpObject->GetType()->InvokeMember("getNumJoysticks",System::Reflection::BindingFlags::InvokeMethod,nullptr,Globals::CSharpObject,nullptr);
 
  
 joysticks  = gcnew array<joystick^>(numJoysticks);
@@ -194,7 +198,7 @@ for(int i=0;i<joysticks->Length;i++)
 	}
 			array<Object^>^ parameters = gcnew array<Object^>(1);
 			parameters[0] = (int) 1;
-int numButtons = (int)CSharpObject->GetType()->InvokeMember("getNumButtons",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
+int numButtons = (int)Globals::CSharpObject->GetType()->InvokeMember("getNumButtons",System::Reflection::BindingFlags::InvokeMethod,nullptr,Globals::CSharpObject,parameters);
 joysticks[i]->totalButtons = numButtons;
 }
 
@@ -231,19 +235,19 @@ joysticks[i]->totalButtons = numButtons;
 	{
 		array<Object^>^ parameters = gcnew array<Object^>(1);
 		parameters[0] = (int) i;
-		int numAxis = (int)CSharpObject->GetType()->InvokeMember("getNumAxis",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
+		int numAxis = (int)Globals::CSharpObject->GetType()->InvokeMember("getNumAxis",System::Reflection::BindingFlags::InvokeMethod,nullptr,Globals::CSharpObject,parameters);
 		for(int j=0;j<numAxis;j++)
 		{
 			parameters = gcnew array<Object^>(2);
 			parameters[0] = (int) i;
 			parameters[1] = (int) j;
 
-			int axisValue = (int)CSharpObject->GetType()->InvokeMember("getAxisValue",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
+			int axisValue = (int)Globals::CSharpObject->GetType()->InvokeMember("getAxisValue",System::Reflection::BindingFlags::InvokeMethod,nullptr,Globals::CSharpObject,parameters);
 			joysticks[i]->setAxis(j,axisValue);
 		}
 	}
 
-	bool setButtons = (bool)CSharpObject->GetType()->InvokeMember("useButtons",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,nullptr);
+	bool setButtons = (bool)Globals::CSharpObject->GetType()->InvokeMember("useButtons",System::Reflection::BindingFlags::InvokeMethod,nullptr,Globals::CSharpObject,nullptr);
 
 	if(setButtons)
 	{
@@ -254,7 +258,7 @@ joysticks[i]->totalButtons = numButtons;
 				array<Object^>^ parameters = gcnew array<Object^>(2);
 				parameters[0] = (int) i;
 				parameters[1] = (int) j;
-				bool buttonValue = (bool)CSharpObject->GetType()->InvokeMember("getButtonValue",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,parameters);
+				bool buttonValue = (bool)Globals::CSharpObject->GetType()->InvokeMember("getButtonValue",System::Reflection::BindingFlags::InvokeMethod,nullptr,Globals::CSharpObject,parameters);
 
 				joysticks[i]->setButton(j,buttonValue);
 			}
@@ -269,7 +273,7 @@ joysticks[i]->totalButtons = numButtons;
 			break;
 		}
 	}
-	CSharpObject->GetType()->InvokeMember("extraCode",System::Reflection::BindingFlags::InvokeMethod,nullptr,CSharpObject,nullptr);
+	Globals::CSharpObject->GetType()->InvokeMember("extraCode",System::Reflection::BindingFlags::InvokeMethod,nullptr,Globals::CSharpObject,nullptr);
 
 
 	Sleep(50);

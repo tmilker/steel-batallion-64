@@ -11,7 +11,7 @@
 			<DebugSettings
 				Command="$(TargetPath)"
 				WorkingDirectory=""
-				CommandArguments="&quot;C:\\Users\\Santiago\\Documents\\Visual Studio 2008\\Projects\\Steel-Batallion-64\\steelbattalionnet\\SBC\\test.cs&quot;"
+				CommandArguments="&quot;..\\MW4.cs&quot;"
 				Attach="false"
 				DebuggerType="3"
 				Remote="1"
@@ -39,7 +39,7 @@
 			<DebugSettings
 				Command="$(TargetPath)"
 				WorkingDirectory=""
-				CommandArguments=""
+				CommandArguments="&quot;..\\MW4.cs&quot;"
 				Attach="false"
 				DebuggerType="3"
 				Remote="1"
@@ -50,7 +50,7 @@
 				SQLDebugging=""
 				Environment=""
 				EnvironmentMerge="true"
-				DebuggerFlavor=""
+				DebuggerFlavor="0"
 				MPIRunCommand=""
 				MPIRunArguments=""
 				MPIRunWorkingDirectory=""
