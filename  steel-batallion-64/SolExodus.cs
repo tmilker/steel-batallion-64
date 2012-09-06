@@ -3,12 +3,20 @@ using System;
 namespace SBC {
 public class DynamicClass
 {
-SteelBattalionController controller;
+SteelBattalionController controller;//the object we actually use to get information from the Steel Batallion Controller
 
+//this is where we define how many joysticks the program is expecting to update, for now we are only using one joystick
+//to keep things simple.  Since Windows only supports 8 axis joysticks natively, if you wanted to support all 10 axes
+//on the steel batallion you would have to spread it out over 2 joysticks.  I can't think of a reason you would want
+//to do that though.  Its easier to mix and match as you need, and you can usually combine the middle and right pedals.
+//as I do here.  In case you aren't familiar with C# anything following a // or between /* */ is commented out and
+//does not affect actual code
 const int numJoysticks = 1;
-const int defaultAxisValue = 100;
+const int defaultAxisValue = 100;//just a default value to send back to the program if you somehow fail to provide
+								 //a return value in the switch statement
 
 //there are lots of ways to do this, enumeration would come to mind, but I"m keeping it simple for now.
+//These are equivalent to the names of the axes you would see when calibrating the joystick
 const int x_axis = 0;
 const int y_axis = 1;
 const int z_axis = 2;
@@ -18,20 +26,69 @@ const int x_rotation = 5;
 const int y_rotation = 6;
 const int dial = 7;
 
-
+	//This function must be defined
 	public int getNumJoysticks()
 	{
 	    return numJoysticks;
 	}
+	
+	//Here is a list of all buttons available for mapping
+	/*
+		RightJoyMainWeapon,
+		RightJoyFire,
+		RightJoyLockOn,
+        Eject,
+		CockpitHatch,
+		Ignition,
+		Start,
+		MultiMonOpenClose,
+		MultiMonMapZoomInOut,
+		MultiMonModeSelect,
+		MultiMonSubMonitor,
+		MainMonZoomIn,
+		MainMonZoomOut,
+        FunctionFSS,
+        FunctionManipulator,
+        FunctionLineColorChange,
+		Washing,
+		Extinguisher,
+		Chaff,
+        FunctionTankDetach,
+        FunctionOverride,
+        FunctionNightScope,
+        FunctionF1,
+        FunctionF2,
+        FunctionF3,
+		WeaponConMain,
+		WeaponConSub,
+		WeaponConMagazine,
+		Comm1,
+		Comm2,
+		Comm3,
+		Comm4,
+		Comm5,
+		LeftJoySightChange,
+		ToggleFilterControl,
+		ToggleOxygenSupply,
+		ToggleFuelFlowRate,
+		ToggleBufferMaterial,
+		ToggleVTLocation,
+		TunerDialStateChange,
+		GearLeverStateChange
+	*/
 
+	//this function must be defined and is called only once by the program.  This is where most people will do their
+	//modifications specific to a game
     public void Initialize()
     {
 
-		controller = new SteelBattalionController();
+		controller = new SteelBattalionController();//We have to first initialize the controller
 		controller.Init(50);//50 is refresh rate in milliseconds
 
-        controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,                       VirtualKeyCode.VK_Q,                        false);
-        controller.AddButtonKeyMapping(ButtonEnum.RightJoyFire,                             VirtualKeyCode.VK_W,                        true);
+		//Now add all the keymapping you desire
+		//AddButtonKeyMapping requires a Button, a keycode, and whether or not to send separate keydown/ key up presses
+        controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,                       VirtualKeyCode.VK_Q,                        false);//false is equivalent to quickly hitting button once and releasing
+        controller.AddButtonKeyMapping(ButtonEnum.RightJoyFire,                             VirtualKeyCode.VK_W,                        true);//true is equal to holding down a key
         controller.AddButtonKeyMapping(ButtonEnum.RightJoyLockOn,                           VirtualKeyCode.VK_E,                        false);
         controller.AddButtonKeyLightMapping(ButtonEnum.Eject,                   true, 15,   VirtualKeyCode.VK_R,                        true);
         controller.AddButtonKeyLightMapping(ButtonEnum.CockpitHatch,            true, 3,    VirtualKeyCode.VK_T,                        true);
@@ -59,17 +116,36 @@ const int dial = 7;
         controller.AddButtonKeyLightMapping(ButtonEnum.WeaponConSub,            true, 3,    VirtualKeyCode.OEM_4,                       true);
         controller.AddButtonKeyLightMapping(ButtonEnum.WeaponConMagazine,       true, 7,    VirtualKeyCode.OEM_6,                       true);
 	}
+	
+	//we only want to use keymapping or buttonmapping for now, no reason you can't do both, but it might end up being confusing having
+    //a button that both presses a joystick button and a key
+    public bool useButtons()
+    {
+        return false;//using keymapping for now
+    }
+	
+	// Function must be defined, only important if useButtons returns True
     // return number of buttons per joystick, program will then ask for values for each button (only using one joystick right now)
     public int getNumButtons(int joyNum)
     {
         return 13;
     }
 
+	//Function must be defined, to keep things simple, leave this at 8
     //return number of axis per joystick, program will then ask for values for each axis  (only using one joystick right now)
     public int getNumAxis(int joyNum)
     {
         return 8;//8 happens to be the maximum number of axes that PPJoy/Windows currently supports
     }
+	
+	//HERE is where we assign axis, each case corresponds to the name of an axis you would see under
+	//the usb game controller calibration
+	//only axis not shown here is the tuner dial axis, which can be accessed using
+	//  controller.TunerDial
+	
+	//
+	
+	
     public int getAxisValue(int joyNum, int axisNum)
     {
         //technically we should be accounting the joystickNumber as well, but only dealing with one joystick for the moment
@@ -78,17 +154,17 @@ const int dial = 7;
         {
             //case 0 means we asked for what is the value to axis number 0
             case x_axis:
-                return controller.AimingX;//we are assigning controller.AimingX to PPJoy axis 0
+                return controller.AimingX;//Corresponds to the "Aiming Lever" joystick on the right.  X Axis value.
             case y_axis:
-                    return controller.AimingY;
+                    return controller.AimingY;//Corresponds to the "Aiming Lever" joystick on the right.  Y Axis value.
             case z_axis:
-                return -1*(controller.RightPedal - controller.MiddlePedal);//throttle;
+                return -1*(controller.RightPedal - controller.MiddlePedal);//throttle, combining middle and right pedals
             case z_rotation:
-                    return controller.RotationLever;
+                    return controller.RotationLever;//Corresponds to the "Rotation Lever" joystick on the left.
             case slider:
-                return controller.SightChangeX;
+                return controller.SightChangeX;//Corresponds to the "Sight Change" analog stick on the "Rotation Lever" joystick.  X Axis value.
             case x_rotation:
-                return controller.SightChangeY;
+                return controller.SightChangeY;//Corresponds to the "Sight Change" analog stick on the "Rotation Lever" joystick.  Y Axis value.
             case y_rotation:
                 return controller.LeftPedal;
             case dial:
@@ -98,12 +174,7 @@ const int dial = 7;
         return defaultAxisValue;//we always have to return something
     }
     
-    //we only want to use keymapping or buttonmapping for now, no reason you can't do both, but it might end up being confusing having
-    //a button that both presses a joystick button and a key
-    public bool useButtons()
-    {
-        return false;//using keymapping for now
-    }
+
 
     //this function has to be here even if we do not use it
     public bool getButtonValue(int joyNum, int buttonNumber)

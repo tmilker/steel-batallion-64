@@ -1,3 +1,7 @@
+//If you want a quick overview of how the configuration system works, take a look at SolExodus.cs
+//This example was meant to recreate the functionality I displayed for the system in the original release
+//however that also means that it is actually pretty complicated.
+
 using SBC;
 using System;
 namespace SBC {
@@ -5,10 +9,19 @@ public class DynamicClass
 {
 SteelBattalionController controller;
 
-const int numJoysticks = 1;
-const int defaultAxisValue = 100;
+//this is where we define how many joysticks the program is expecting to update, for now we are only using one joystick
+//to keep things simple.  Since Windows only supports 8 axis joysticks natively, if you wanted to support all 10 axes
+//on the steel batallion you would have to spread it out over 2 joysticks.  I can't think of a reason you would want
+//to do that though.  Its easier to mix and match as you need, and you can usually combine the middle and right pedals.
+//as I do here.  In case you aren't familiar with C# anything following a // or between /* */ is commented out and
+//does not affect actual code
+
+const int numJoysticks = 1;//keep it to 1 for now
+const int defaultAxisValue = 100;//just a default value to send back to the program if you somehow fail to provide
+								 //a return value in the switch statement
 
 //there are lots of ways to do this, enumeration would come to mind, but I"m keeping it simple for now.
+//These are equivalent to the names of the axes you would see when calibrating the joystick
 const int x_axis = 0;
 const int y_axis = 1;
 const int z_axis = 2;
@@ -19,13 +32,14 @@ const int y_rotation = 6;
 const int dial = 7;
 
 
+
 //Variables used in extraCode section
 bool currentResetValue;
 bool lastResetValue;
 bool jumpPressed = false;
 
 bool stopPressed = false;//used in special handling of left pedal
-int pedalTriggerLevel = 50;
+int pedalTriggerLevel = 50;//used in special handlign of left pedal, 
 bool performingAlphaStrike = false;
 int thumbstickDeadZone = 25;
 bool inverseThumbStick = false;
