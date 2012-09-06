@@ -97,8 +97,8 @@ double maxZoomMultiplier = 1.5;//used for integrating thumbstick into zooming sy
         controller.AddButtonKeyMapping(ButtonEnum.ToggleFilterControl,                  VirtualKeyCode.OEM_4,                        true);
         controller.AddButtonKeyMapping(ButtonEnum.ToggleOxygenSupply,                   VirtualKeyCode.OEM_4,                        true);
         controller.AddButtonKeyMapping(ButtonEnum.LeftJoySightChange,                   VirtualKeyCode.NUMPAD0,                      true);
-        controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,                   VirtualKeyCode.DELETE_key,                         false);//true means send separate keydown/keyup commands
-        controller.AddButtonKeyMapping(ButtonEnum.RightJoyFire,                         VirtualKeyCode.RETURN,                              false);
+        controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,                   VirtualKeyCode.DELETE_key,                   true);//true means send separate keydown/keyup commands
+        controller.AddButtonKeyMapping(ButtonEnum.RightJoyFire,                         VirtualKeyCode.RETURN,                       true);
 
 
         if(inverseThumbStick)
