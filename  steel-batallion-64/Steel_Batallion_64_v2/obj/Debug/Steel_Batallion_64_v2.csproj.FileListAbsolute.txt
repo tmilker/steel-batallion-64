@@ -1,0 +1,8 @@
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\obj\Debug\Steel_Batallion_64_v2.Form1.resources
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\obj\Debug\Steel_Batallion_64_v2.Properties.Resources.resources
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\obj\Debug\Steel_Batallion_64_v2.csproj.GenerateResource.Cache
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\Debug\Steel_Batallion_64_v2.exe
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\Debug\Steel_Batallion_64_v2.pdb
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\obj\Debug\Steel_Batallion_64_v2.exe
+C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\obj\Debug\Steel_Batallion_64_v2.pdb

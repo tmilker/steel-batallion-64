@@ -26,6 +26,11 @@ const int x_rotation = 5;
 const int y_rotation = 6;
 const int dial = 7;
 
+int pedalTriggerLevel = 50;//used in special handlign of left pedal, the amount we have to press to get it to trigger the button
+bool jumpPressed = false;//boolean used to store when the jump pedal was pressed.
+VirtualKeyCode jumpKey = VirtualKeyCode.VK_J;//this is used in the extraCode section and is the key we want pressed when
+											//the left pedal gets depressed passed the left pedal trigger level
+
 	//This function must be defined
 	public int getNumJoysticks()
 	{
@@ -186,6 +191,23 @@ const int dial = 7;
     //this function has to be here even if we do not use it
     public void extraCode()//place any extra code you want executed during the loop here.
     {
+		if(controller.LeftPedal > pedalTriggerLevel)
+		{
+	    	//take care of the button logic separately, to be less confusing
+    		if(!jumpPressed)//if not currently holding down jump key
+		    {
+   				controller.sendKeyDown(jumpKey);
+			    jumpPressed = true;
+		    }
+		}
+		else//jump button was pressed
+		{		
+			if(jumpPressed)
+			{
+				controller.sendKeyUp(jumpKey);
+				jumpPressed = false;
+			}
+		}	
     }
 }
 }
