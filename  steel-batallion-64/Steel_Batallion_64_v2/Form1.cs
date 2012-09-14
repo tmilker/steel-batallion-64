@@ -28,9 +28,16 @@ namespace Steel_Batallion_64_v2
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            bool enabled = vJoy.vJoyEnabled();
-            int version = vJoy.GetvJoyVersion();
-            string productInfo = vJoy.getProductString();
+            vJoy joystick = new vJoy();
+
+            bool enabled = joystick.isEnabled();
+            int version = joystick.getVersion();
+            string productInfo = joystick.getProductString();
+            VjdStat currentStatus = joystick.getVJDStatus(1);
+            bool acuired = joystick.acquireVJD(1);
+            VjdStat currentStatus2 = joystick.getVJDStatus(1);
+
+            
             CSharpCodeProvider codeProvider = new CSharpCodeProvider();
             codeProvider.CreateCompiler();
             //add compiler parameters
