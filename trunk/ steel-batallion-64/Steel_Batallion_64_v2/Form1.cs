@@ -36,7 +36,23 @@ namespace Steel_Batallion_64_v2
             VjdStat currentStatus = joystick.getVJDStatus(1);
             bool acuired = joystick.acquireVJD(1);
             VjdStat currentStatus2 = joystick.getVJDStatus(1);
+            int byteSize = joystick.joystickStateSize();
 
+            int totalButtons = joystick.getTotalButtons(1);
+            int discretePOVnumber = joystick.getTotalDiscretePOVs(1);
+            int continuousPOVnumber = joystick.getTotalContinuousPOVs(1);
+
+            bool hasX = joystick.hasAxis(1, HID_USAGES.HID_USAGE_X);
+            bool hasY = joystick.hasAxis(1, HID_USAGES.HID_USAGE_Y);
+            bool hasZ = joystick.hasAxis(1, HID_USAGES.HID_USAGE_Z);
+            bool hasRX = joystick.hasAxis(1, HID_USAGES.HID_USAGE_RX);
+            bool hasRY = joystick.hasAxis(1, HID_USAGES.HID_USAGE_RY);
+            bool hasRZ = joystick.hasAxis(1, HID_USAGES.HID_USAGE_RZ);
+            bool hasSL0 = joystick.hasAxis(1, HID_USAGES.HID_USAGE_SL0);
+            bool hasSL1 = joystick.hasAxis(1, HID_USAGES.HID_USAGE_SL1);
+            bool hasWHL = joystick.hasAxis(1, HID_USAGES.HID_USAGE_WHL);
+
+            bool successful = joystick.setAxis(1, 3000, (uint)HID_USAGES.HID_USAGE_X);
             
             CSharpCodeProvider codeProvider = new CSharpCodeProvider();
             codeProvider.CreateCompiler();
