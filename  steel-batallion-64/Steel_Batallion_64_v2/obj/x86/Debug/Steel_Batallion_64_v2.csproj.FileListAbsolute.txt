@@ -10,8 +10,6 @@ C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\x86\Debug\LibUsbDotNet.dll
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\x86\Debug\InputSimulator.dll
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\x86\Debug\LibUsbDotNet.xml
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\x86\Debug\InputSimulator.pdb
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\x86\Debug\InputSimulator.xml
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\x86\Debug\SBC.pdb
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\x86\Debug\myVJoyWrapper.dll
 C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\Steel_Batallion_64_v2\bin\x86\Debug\myVJoyWrapper.pdb
