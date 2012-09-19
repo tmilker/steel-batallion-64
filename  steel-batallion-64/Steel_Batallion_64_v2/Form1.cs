@@ -52,8 +52,24 @@ namespace Steel_Batallion_64_v2
             bool hasSL1 = joystick.hasAxis(1, HID_USAGES.HID_USAGE_SL1);
             bool hasWHL = joystick.hasAxis(1, HID_USAGES.HID_USAGE_WHL);
 
-            bool successful = joystick.setAxis(1, 3000, (uint)HID_USAGES.HID_USAGE_X);
-            
+
+
+            int value = 0;
+            joystick.resetAll();//needs to be called before modifying values
+            joystick.setAxis(1, 256, HID_USAGES.HID_USAGE_X);
+            joystick.sendUpdate(1);
+            /*while (true)
+            {
+                for (int i = 0; i < 10; i++)
+                    successful = joystick.setAxis(1,value, (uint)(HID_USAGES.HID_USAGE_X + i));
+
+                System.Threading.Thread.Sleep(20);
+                value += 10;
+            }*/
+
+            //successful = joystick.setAxis(1, value, (uint)(HID_USAGES.HID_USAGE_X));
+
+           
             CSharpCodeProvider codeProvider = new CSharpCodeProvider();
             codeProvider.CreateCompiler();
             //add compiler parameters
