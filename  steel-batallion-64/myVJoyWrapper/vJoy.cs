@@ -69,36 +69,37 @@ namespace myVJoyWrapper
     public class vJoy
     {
 
-
+        private const int maxDevices = 16;
         
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct JoystickState
         {
-            public Byte bDevice;
-            public UInt32 Throttle;
-            public UInt32 Rudder;
-            public UInt32 Aileron;
-            public UInt32 AxisX;
-            public UInt32 AxisY;
-            public UInt32 AxisZ;
-            public UInt32 AxisXRot;
-            public UInt32 AxisYRot;
-            public UInt32 AxisZRot;
-            public UInt32 Slider;
-            public UInt32 Dial;
-            public UInt32 Wheel;
-            public UInt32 AxisVX;
-            public UInt32 AxisVY;
-            public UInt32 AxisVZ;
-            public UInt32 AxisVBRX;
-            public UInt32 AxisVBRY;
-            public UInt32 AxisVBRZ;
-            public UInt32 Buttons;
+            public byte bDevice;
+            public Int32 Throttle;
+            public Int32 Rudder;
+            public Int32 Aileron;
+            public Int32 AxisX;
+            public Int32 AxisY;
+            public Int32 AxisZ;
+            public Int32 AxisXRot;
+            public Int32 AxisYRot;
+            public Int32 AxisZRot;
+            public Int32 Slider;
+            public Int32 Dial;
+            public Int32 Wheel;
+            public Int32 AxisVX;
+            public Int32 AxisVY;
+            public Int32 AxisVZ;
+            public Int32 AxisVBRX;
+            public Int32 AxisVBRY;
+            public Int32 AxisVBRZ;
+            public Int32 Buttons;
             public UInt32 bHats;		// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
             public UInt32 bHatsEx1;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
             public UInt32 bHatsEx2;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
             public UInt32 bHatsEx3;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
-        } ;
+        };
+
+        JoystickState[] currentState = new JoystickState[maxDevices];
 
         [DllImport("vJoyInterface.dll")]
         private static extern bool vJoyEnabled();
@@ -139,14 +140,27 @@ namespace myVJoyWrapper
         [DllImport("vJoyInterface.dll")]
         private static extern bool GetVJDAxisExist(UInt32 rID, UInt32 Axis);
 
+        /* ALL THESE ARE made public */
+        [DllImport("vJoyInterface.dll")]
+        public static extern bool ResetVJD(UInt32 rID);
+        
+        [DllImport("vJoyInterface.dll")]
+        public static extern bool ResetAll();
+
+        [DllImport("vJoyInterface.dll")]
+        public static extern bool ResetButtons(UInt32 rID);
+
+        [DllImport("vJoyInterface.dll")]
+        public static extern bool ResetPovs(UInt32 rID);
+       
+        [DllImport("vJoyInterface.dll")]
+        private static extern bool SetAxis(Int32 Value, UInt32 rID, UInt32 Axis);
 
         [DllImport("vJoyInterface.dll")]
         private static extern bool SetBtn(bool Value, UInt32 rID, char nBtn);
 
-
-        
         [DllImport("vJoyInterface.dll")]
-        private static extern bool SetAxis(UInt32 Value, UInt32 rID, UInt32 Axis);
+        private static extern bool SetDiscPov(Int32 Value, UInt32 rID, char nPov);
 
         bool enabledCalled = false;
 
@@ -188,20 +202,26 @@ namespace myVJoyWrapper
             return Marshal.PtrToStringAuto(GetvJoySerialNumberString());
         }
 
-        public VjdStat getVJDStatus(int rID)
+        public VjdStat getVJDStatus(uint rID)
         {
-            return (VjdStat)GetVJDStatus((UInt32)rID);
+            return (VjdStat)GetVJDStatus(rID);
         }
 
-        public bool acquireVJD(int rID)
+        public bool acquireVJD(uint rID)
         {
-            return AcquireVJD((UInt32)rID);
+            if (AcquireVJD(rID))
+            {
+                currentState[rID].bDevice = (byte) rID;
+                return true;
+            }
+            else
+                return false;
         }
 
-        public void relinquishVJD(int rID)
+        public void relinquishVJD(uint rID)
         {
             if (GetVJDStatus((UInt32)rID) == (UInt32)VjdStat.VJD_STAT_OWN)
-                RelinquishVJD((UInt32)rID);
+                RelinquishVJD(rID);
         }
 
         public int joystickStateSize()
@@ -211,54 +231,99 @@ namespace myVJoyWrapper
             
         }
 
-        public bool setThrottle(int rID, int value)
+        public int getTotalButtons(uint rID)
         {
-            JoystickState example = new JoystickState();
-            example.bDevice = 1;
-            example.AxisX = (uint) value;
-            example.Buttons = 255;
-
-            IntPtr unmanagedPointer = Marshal.AllocHGlobal(96);
-            Marshal.StructureToPtr(example, unmanagedPointer, false);
-
-            return UpdateVJD((UInt32)rID,unmanagedPointer);
+            return GetVJDButtonNumber(rID);
         }
 
-        public bool setAxis(int rID, int value, uint axis)
+        public int getTotalDiscretePOVs(uint rID)
         {
-            return SetAxis((uint) value, (uint) rID,(uint) axis);
+            return GetVJDDiscPovNumber(rID);
         }
 
-        public int getTotalButtons(int rID)
+        public int getTotalContinuousPOVs(uint rID)
         {
-            return GetVJDButtonNumber((uint)rID);
+            return GetVJDContPovNumber(rID);
         }
 
-        public int getTotalDiscretePOVs(int rID)
+        public bool hasAxis(uint rID, HID_USAGES Axis)
         {
-            return GetVJDDiscPovNumber((uint)rID);
+            return GetVJDAxisExist(rID, (uint)Axis);
         }
 
-        public int getTotalContinuousPOVs(int rID)
+        public void setAxis(uint rID, int value, HID_USAGES axis)
         {
-            return GetVJDContPovNumber((uint)rID);
+            switch(axis)
+            {
+                case(HID_USAGES.HID_USAGE_X):
+                    currentState[rID].AxisX = value;
+                    break;
+                case(HID_USAGES.HID_USAGE_Y):
+                    currentState[rID].AxisY = value;
+                    break;
+                case(HID_USAGES.HID_USAGE_Z):
+                    currentState[rID].AxisZ = value;
+                    break;
+                case(HID_USAGES.HID_USAGE_RX):
+                    currentState[rID].AxisXRot = value;
+                    break;
+                case(HID_USAGES.HID_USAGE_RY):
+                    currentState[rID].AxisYRot = value;
+                    break;
+                case(HID_USAGES.HID_USAGE_RZ):
+                    currentState[rID].AxisZRot = value;
+                    break;
+                case(HID_USAGES.HID_USAGE_SL0):
+                    currentState[rID].Slider = value;
+                    break;
+                case(HID_USAGES.HID_USAGE_SL1):
+                    currentState[rID].Dial = value;
+                    break;
+                case(HID_USAGES.HID_USAGE_WHL):
+                    currentState[rID].Wheel = value;
+                    break;
+            }
         }
 
-        public bool hasAxis(int rID, HID_USAGES Axis)
+        public bool setButton(bool value, uint rID, char button)
         {
-            return GetVJDAxisExist((uint)rID, (uint)Axis);
+            return SetBtn(value, rID, button);
         }
 
-        public bool setButton(bool value, int rID, int button)
+        public bool setDiscPov(Int32 Value, uint rID, char nPov)
         {
-            return SetBtn(value, (uint)rID, (char)button);
+            return SetDiscPov(Value, rID, nPov);
         }
 
+        public bool setContPov(UInt32 Value, uint rID, char nPov)
+        {
+            return setContPov(Value, rID, nPov);
+        }
+
+        public bool resetAll()
+        {
+            return ResetAll();
+        }
+
+        public bool resetVJD(uint rID)
+        {
+            return ResetVJD(rID);
+        }
+
+        public bool resetButtons(uint rID)
+        {
+            return ResetButtons(rID);
+        }
+
+        public bool sendUpdate(UInt32 rID)
+        {
+            byte[] arr = new byte[Marshal.SizeOf(currentState[rID])];
+            IntPtr unmanagedPointer = Marshal.AllocHGlobal(Marshal.SizeOf(currentState[rID]));
+            Marshal.StructureToPtr(currentState[rID], unmanagedPointer, false);
+            Marshal.Copy(unmanagedPointer, arr, 0, Marshal.SizeOf(currentState[rID]));
 
 
-
-
-
-
+            return UpdateVJD(rID, unmanagedPointer);
+        }
     }
 }
