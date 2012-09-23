@@ -3,11 +3,13 @@
 //however that also means that it is actually pretty complicated.
 
 using SBC;
+using myVJoyWrapper;
 using System;
 namespace SBC {
 public class DynamicClass
 {
 SteelBattalionController controller;
+vJoy joystick = new vJoy();
 
 //this is where we define how many joysticks the program is expecting to update, for now we are only using one joystick
 //to keep things simple.  Since Windows only supports 8 axis joysticks natively, if you wanted to support all 10 axes
@@ -31,6 +33,8 @@ const int x_rotation = 5;
 const int y_rotation = 6;
 const int dial = 7;
 
+const int refreshRate = 50;//number of milliseconds between call to mainLoop
+
 
 
 //Variables used in extraCode section
@@ -46,11 +50,6 @@ bool inverseThumbStick = false;
 int inverseThumbStickMultiplier;
 double maxZoomMultiplier = 1.5;//used for integrating thumbstick into zooming system
 
-
-	public int getNumJoysticks()
-	{
-	    return numJoysticks;
-	}
 
     public void Initialize()
     {
@@ -119,8 +118,14 @@ double maxZoomMultiplier = 1.5;//used for integrating thumbstick into zooming sy
 	        inverseThumbStickMultiplier = 1;
         else
 	        inverseThumbStickMultiplier = -1;
-
 	}
+	
+	public int getRefreshRate()
+	{
+		return refreshRate;
+	}
+	
+	
     // return number of buttons per joystick, program will then ask for values for each button (only using one joystick right now)
     public int getNumButtons(int joyNum)
     {
