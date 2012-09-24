@@ -28,15 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.errorBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.StartBtn = new System.Windows.Forms.Button();
+            this.StopBtn = new System.Windows.Forms.Button();
+            this.Status = new System.Windows.Forms.Label();
             this.SuspendLayout();
-            // 
-            // timer1
-            // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // errorBox
             // 
@@ -56,11 +53,43 @@
             this.label1.TabIndex = 1;
             this.label1.Text = "Errors";
             // 
+            // StartBtn
+            // 
+            this.StartBtn.Location = new System.Drawing.Point(339, 58);
+            this.StartBtn.Name = "StartBtn";
+            this.StartBtn.Size = new System.Drawing.Size(75, 23);
+            this.StartBtn.TabIndex = 2;
+            this.StartBtn.Text = "Start";
+            this.StartBtn.UseVisualStyleBackColor = true;
+            this.StartBtn.Click += new System.EventHandler(this.StartBtn_Click);
+            // 
+            // StopBtn
+            // 
+            this.StopBtn.Location = new System.Drawing.Point(177, 58);
+            this.StopBtn.Name = "StopBtn";
+            this.StopBtn.Size = new System.Drawing.Size(75, 23);
+            this.StopBtn.TabIndex = 3;
+            this.StopBtn.Text = "Stop";
+            this.StopBtn.UseVisualStyleBackColor = true;
+            this.StopBtn.Click += new System.EventHandler(this.StopBtn_Click);
+            // 
+            // Status
+            // 
+            this.Status.AutoSize = true;
+            this.Status.Location = new System.Drawing.Point(274, 28);
+            this.Status.Name = "Status";
+            this.Status.Size = new System.Drawing.Size(37, 13);
+            this.Status.TabIndex = 4;
+            this.Status.Text = "Status";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(615, 345);
+            this.Controls.Add(this.Status);
+            this.Controls.Add(this.StopBtn);
+            this.Controls.Add(this.StartBtn);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.errorBox);
             this.Name = "Form1";
@@ -74,9 +103,11 @@
 
         #endregion
 
-        private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.TextBox errorBox;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button StartBtn;
+        private System.Windows.Forms.Button StopBtn;
+        private System.Windows.Forms.Label Status;
     }
 }
 
