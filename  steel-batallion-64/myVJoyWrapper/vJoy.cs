@@ -92,7 +92,7 @@ namespace myVJoyWrapper
             public Int32 AxisVBRX;
             public Int32 AxisVBRY;
             public Int32 AxisVBRZ;
-            public Int32 Buttons;
+            public UInt32 Buttons;
             public UInt32 bHats;		// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
             public UInt32 bHatsEx1;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
             public UInt32 bHatsEx2;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
@@ -284,20 +284,56 @@ namespace myVJoyWrapper
                     break;
             }
         }
-
-        public bool setButton(bool value, uint rID, char button)
+        /// <summary>
+        /// Set the state of a joystick button. UpdateJoystick() must be called after this, to send the update.
+        /// </summary>
+        /// <param name="buttonNum">Button number, 0-31</param>
+        /// <param name="value">True for button down, false for button up</param>
+        public void setButton(bool value, uint rID, char buttonNum)
         {
-            return SetBtn(value, rID, button);
+            /*if (buttonNum >= 32)
+                throw new ArgumentOutOfRangeException("Button number out of range");*///having trouble with these, they don't seem to work with dynamic code
+
+            if (value)
+                currentState[rID].Buttons |= (uint)(1 << buttonNum);
+            else
+                currentState[rID].Buttons &= (uint)~(1 << buttonNum);
         }
+
 
         public bool setDiscPov(Int32 Value, uint rID, char nPov)
         {
             return SetDiscPov(Value, rID, nPov);
         }
 
-        public bool setContPov(UInt32 Value, uint rID, char nPov)
+        /// <summary>
+        /// Write Value to a given continuous POV defined in the specified VDJ
+        /// It is measured in units of one-hundredth a degree.
+        /// </summary>
+        /// <param name="Value">Value can be in the range: 0 to 35999</param>
+        /// <param name="nPov">selects the destination POV Switch. It can be 1 to 4</param>
+        public void setContPov(uint rID, UInt32 Value, int nPov)
         {
-            return setContPov(Value, rID, nPov);
+           /* if (nPov > 4 || nPov < 1)
+                throw new ArgumentOutOfRangeException("POV number out of range, must be between 1 and 4");
+            if(Value > 35999 || Value < 0)
+                throw new ArgumentOutOfRangeException("Continuous POV Value must be between 1 and 35999");*////having trouble with these, they don't seem to work with dynamic code
+            switch (nPov)
+            {
+                case 1:
+                    currentState[rID].bHats = Value;
+                    break;
+                case 2:
+                    currentState[rID].bHatsEx1 = Value;
+                    break;
+                case 3:
+                    currentState[rID].bHatsEx2 = Value;
+                    break;
+                case 4:
+                    currentState[rID].bHatsEx3 = Value;
+                    break;
+            }
+
         }
 
         public bool resetAll()
@@ -324,6 +360,11 @@ namespace myVJoyWrapper
 
 
             return UpdateVJD(rID, unmanagedPointer);
+        }
+
+        public void Release(UInt32 rID)
+        {
+            RelinquishVJD(rID);
         }
     }
 }

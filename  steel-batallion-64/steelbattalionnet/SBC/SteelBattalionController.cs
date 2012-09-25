@@ -39,7 +39,7 @@ using System.Timers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;//used for backgroundworker
-using WindowsInput;
+using Microsoft.DirectX.DirectInput;
 
 
 
@@ -72,18 +72,18 @@ namespace SBC
 
     public struct KeyProperties
     {
-        public VirtualKeyCode keyCode1;
-        public VirtualKeyCode modifier;
+        public Microsoft.DirectX.DirectInput.Key keyCode1;
+        public Microsoft.DirectX.DirectInput.Key modifier;
         public bool holdDown;
         public bool useModifier;
-        public KeyProperties(VirtualKeyCode a, bool b)
+        public KeyProperties(Microsoft.DirectX.DirectInput.Key a, bool b)
         {
-            modifier = (VirtualKeyCode) (0);
+            modifier = (Microsoft.DirectX.DirectInput.Key)(0);
             keyCode1 = a;
             holdDown = b;
             useModifier = false;
         }
-        public KeyProperties(VirtualKeyCode a, VirtualKeyCode b, bool c)//used when we have a modifier
+        public KeyProperties(Microsoft.DirectX.DirectInput.Key a, Microsoft.DirectX.DirectInput.Key b, bool c)//used when we have a modifier
         {
             modifier = a;
             keyCode1 = b;
@@ -177,13 +177,13 @@ namespace SBC
                 SetLEDState((ControllerLEDEnum)((int)ControllerLEDEnum.GearN + gearValue), gearLightIntensity, false);
         }
 
-        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, VirtualKeyCode keyCode, bool holdDown)
+        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             AddButtonLightMapping(button, lightOnHold, intensity);
             AddButtonKeyMapping(button, keyCode, holdDown);
         }
 
-        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, VirtualKeyCode keyCode1, VirtualKeyCode keyCode2, bool holdDown)
+        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, Microsoft.DirectX.DirectInput.Key keyCode1, Microsoft.DirectX.DirectInput.Key keyCode2, bool holdDown)
         {
             AddButtonLightMapping(button, lightOnHold, intensity);
             AddButtonKeyMapping(button, keyCode1, keyCode2, holdDown);
@@ -207,19 +207,19 @@ namespace SBC
             
         }
 
-        public void AddButtonKeyMapping(ButtonEnum button, VirtualKeyCode keyCode, bool holdDown)
+        public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             if (ButtonKeys.Contains((int)button))
                 ButtonKeys.Remove((int)button);//to save on later garbage collection
             ButtonKeys[(int)button] = new KeyProperties(keyCode, holdDown);
         }
 
-        public void AddButtonKeyMapping(ButtonEnum button, VirtualKeyCode modifier, VirtualKeyCode keyCode, bool holdDown)
+        public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             ButtonKeys[(int)button] = new KeyProperties(modifier,keyCode, holdDown);
         }
 
-        public VirtualKeyCode GetButtonKey(ButtonEnum button)
+        public Microsoft.DirectX.DirectInput.Key GetButtonKey(ButtonEnum button)
         {
             KeyProperties value = (KeyProperties)(ButtonKeys[(int)button]);
             return value.keyCode1;
@@ -463,24 +463,24 @@ namespace SBC
             return isStateChanged(rawControlData, mask.bytePos, mask.maskValue);
         }
 
-        public void sendKeyPress(VirtualKeyCode keycode)
+        public void sendKeyPress(Microsoft.DirectX.DirectInput.Key keycode)
         {
-            InputSimulator.SimulateKeyPress((WindowsInput.VirtualKeyCode)keycode);
+            InputSimulator.SimulateKeyPress(keycode);
         }
 
-        public void sendKeyPress(VirtualKeyCode modifier, VirtualKeyCode keycode)
+        public void sendKeyPress(Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keycode)
         {
-            InputSimulator.SimulateModifiedKeyStroke((WindowsInput.VirtualKeyCode)modifier, (WindowsInput.VirtualKeyCode)keycode);
+            InputSimulator.SimulateModifiedKeyStroke(modifier, keycode);
         }
 
-        public void sendKeyDown(VirtualKeyCode keycode)
+        public void sendKeyDown(Microsoft.DirectX.DirectInput.Key keycode)
         {
-            InputSimulator.SimulateKeyDown((WindowsInput.VirtualKeyCode)keycode);
+            InputSimulator.SimulateKeyDown(keycode);
         }
 
-        public void sendKeyUp(VirtualKeyCode keycode)
+        public void sendKeyUp(Microsoft.DirectX.DirectInput.Key keycode)
         {
-            InputSimulator.SimulateKeyUp((WindowsInput.VirtualKeyCode)keycode);
+            InputSimulator.SimulateKeyUp(keycode);
         }
 
 
@@ -537,21 +537,21 @@ namespace SBC
 						if (currentKeyProperties.useModifier)
 						{
                             if (state.currentState)//button is pressed, then press key
-                                InputSimulator.SimulateModifiedKeyStroke((WindowsInput.VirtualKeyCode)currentKeyProperties.modifier, (WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode1);
+                                InputSimulator.SimulateModifiedKeyStroke(currentKeyProperties.modifier, currentKeyProperties.keyCode1);
 						}
 						else
 						{
 							if (currentKeyProperties.holdDown)//send separate down and up keypresses
 							{
 								if (state.currentState)
-									InputSimulator.SimulateKeyDown((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode1);
+									InputSimulator.SimulateKeyDown(currentKeyProperties.keyCode1);
 								else
-									InputSimulator.SimulateKeyUp((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode1);
+									InputSimulator.SimulateKeyUp(currentKeyProperties.keyCode1);
 							}
 							else
 							{
                                 if (state.currentState)
-								    InputSimulator.SimulateKeyPress((WindowsInput.VirtualKeyCode)currentKeyProperties.keyCode1);
+								    InputSimulator.SimulateKeyPress(currentKeyProperties.keyCode1);
 							}
 						}
 					}

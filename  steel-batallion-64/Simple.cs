@@ -5,6 +5,7 @@
 using SBC;
 using myVJoyWrapper;
 using System;
+//using Microsoft.DirectX.DirectInput;
 namespace SBC {
 public class DynamicClass
 {
@@ -30,15 +31,39 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 			if (i != (int)ButtonEnum.Eject)//excluding eject since we are going to flash that one
 			controller.AddButtonLightMapping((ButtonEnum)(i-1),(ControllerLEDEnum)(i),true,baseLineIntensity);
 		}
+		
+         controller.AddButtonKeyLightMapping(ButtonEnum.CockpitHatch,            true, 3,    Microsoft.DirectX.DirectInput.Key.A, true);//last true means if you hold down the button,		
 		 joystick = new vJoy();
 		 acquired = joystick.acquireVJD(1);
-		 joystick.resetAll();
+		 joystick.resetAll();//have to reset before we use it
 	}
 	
 	//this is necessary, as main program calls this to know how often to call mainLoop
 	public int getRefreshRate()
 	{
 		return refreshRate;
+	}
+	
+	private uint getDegrees(double x,double y)
+	{
+		uint temp = (uint)(System.Math.Atan(y/x)* (180/Math.PI));
+		if(x < 0)
+			temp +=180;
+		if(x > 0 && y < 0)
+			temp += 360;
+			
+		temp += 90;//origin is vertical on POV not horizontal
+			
+		if(temp > 360)//by adding 90 we may have gone over 360
+			temp -=360;
+		
+		temp*=100;
+		
+		if (temp > 35999)
+			temp = 35999;
+		if (temp < 0)
+			temp = 0;
+		return temp;
 	}
 
 	//this gets called once every refreshRate milliseconds by main program
@@ -52,14 +77,25 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 		joystick.setAxis(1,controller.SightChangeY,HID_USAGES.HID_USAGE_RX);				
 		joystick.setAxis(1,controller.LeftPedal,HID_USAGES.HID_USAGE_RY);						
 		joystick.setAxis(1,controller.GearLever,HID_USAGES.HID_USAGE_SL1);
-		joystick.sendUpdate(1);
+		
+		joystick.setContPov(1,getDegrees(controller.SightChangeX,controller.SightChangeY),1);
 
-		//will create this appropriately later on.  Calling multiple times instead of storing it in buffer.
+
 		for(int i=1;i<=32;i++)
 		{
-		joystick.setButton((bool)controller.GetButtonState(i-1),(uint)1,(char)i);
+			joystick.setButton((bool)controller.GetButtonState(i-1),(uint)1,(char)(i-1));
 		}
+		
+		joystick.sendUpdate(1);
 
 	}
+	
+	//this gets called at the end of the program and must be present, as it cleans up resources
+	public void shutDown()
+	{
+		controller.UnInit();
+		joystick.Release(1);
+	}
+	
 }
 }

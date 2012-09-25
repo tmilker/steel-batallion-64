@@ -13,14 +13,13 @@ using  System.CodeDom.Compiler;
 using  Microsoft.CSharp;
 using  SBC;
 using myVJoyWrapper;
-using Microsoft.DirectX.DirectInput;
+//using Microsoft.DirectX.DirectInput;
 
 
 namespace Steel_Batallion_64_v2
 {
 	public partial class Form1 : Form
 	{
-		string[] inputArgs;
 		Object CSharpObject;
 		Worker workerObject;
 		Thread workerThread;
@@ -29,12 +28,11 @@ namespace Steel_Batallion_64_v2
 		public Form1(string[] args)
 		{
 			InitializeComponent();
-			inputArgs = args;
 		}
 
 		private void Form1_Load(object sender, EventArgs e)
-		{          
-
+		{
+            fileString.Text = Properties.Settings.Default.storedFileName;
 		}
 
 		private void timer1_Tick(object sender, EventArgs e)
@@ -46,10 +44,19 @@ namespace Steel_Batallion_64_v2
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			//joystick.Dispose();
+            if (ProgramStarted)
+            {
+                workerObject.RequestStop();
+                // Use the Join method to block the current thread 
+                // until the object's thread terminates.
+                workerThread.Join();
+                Status.Text = "Stopped";
+                ProgramStarted = false;
+            }
 		}
 
 		private void StartBtn_Click(object sender, EventArgs e)
-		{
+        {
 			if(!ProgramStarted)
 			{
 			    CSharpCodeProvider codeProvider = new CSharpCodeProvider();
@@ -62,15 +69,10 @@ namespace Steel_Batallion_64_v2
 			    }
 			    compilerParams.ReferencedAssemblies.Add("SBC.dll");
 			    compilerParams.ReferencedAssemblies.Add("myVJoyWrapper.dll");
+                compilerParams.ReferencedAssemblies.Add("Microsoft.DirectX.DirectInput.dll");
 			    String[] fileNames = new String[1];
 
-			    if (inputArgs.Length != 1)
-			    {
-				    MessageBox.Show("Incorrect number of command line paramters, please input settings c# file");
-				    return;
-			    }
-
-			    CompilerResults results = codeProvider.CompileAssemblyFromFile(compilerParams, @"..\..\..\..\..\Steel-Batallion-64\Simple.cs");
+			    CompilerResults results = codeProvider.CompileAssemblyFromFile(compilerParams, fileString.Text);
 			    if (results.Errors.Count > 0)
 			    {
 				    //MessageBox.Show("There were errors");
@@ -110,6 +112,24 @@ namespace Steel_Batallion_64_v2
             Status.Text = "Stopped";
             ProgramStarted = false;
 		}
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Displays an OpenFileDialog so the user can select a Cursor.
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.Filter = "C# files|*.cs";
+            openFileDialog1.Title = "Select a C# configuration File";
+
+            // Show the Dialog.
+            // If the user clicked OK in the dialog and
+            // a .CUR file was selected, open it.
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                // Assign the cursor in the Stream to the Form's Cursor property.
+                Properties.Settings.Default.storedFileName = fileString.Text = openFileDialog1.FileName;
+                Properties.Settings.Default.Save();
+            }
+        }
 	}
 	public class Worker
 	{
@@ -126,7 +146,6 @@ namespace Steel_Batallion_64_v2
 			int refreshRate = (int)CSharpObject.GetType().InvokeMember("getRefreshRate", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
 			while (!_shouldStop)
 			{
-				//Console.WriteLine("worker thread: working...");
 				CSharpObject.GetType().InvokeMember("mainLoop", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
 				Thread.Sleep(refreshRate);
 			}
