@@ -11,8 +11,6 @@ using  System.IO;
 using  System.Reflection;
 using  System.CodeDom.Compiler;
 using  Microsoft.CSharp;
-using  SBC;
-using myVJoyWrapper;
 //using Microsoft.DirectX.DirectInput;
 
 
@@ -23,6 +21,7 @@ namespace Steel_Batallion_64_v2
 		Object CSharpObject;
 		Worker workerObject;
 		Thread workerThread;
+        CompilerParameters compilerParams;
 		bool ProgramStarted = false;
 		
 		public Form1(string[] args)
@@ -33,6 +32,10 @@ namespace Steel_Batallion_64_v2
 		private void Form1_Load(object sender, EventArgs e)
 		{
             fileString.Text = Properties.Settings.Default.storedFileName;
+
+            //compilerParams.ReferencedAssemblies.Add("SBC.dll");
+            //compilerParams.ReferencedAssemblies.Add("myVJoyWrapper.dll");
+            //compilerParams.ReferencedAssemblies.Add("Microsoft.DirectX.DirectInput.dll");
 		}
 
 		private void timer1_Tick(object sender, EventArgs e)
@@ -57,19 +60,25 @@ namespace Steel_Batallion_64_v2
 
 		private void StartBtn_Click(object sender, EventArgs e)
         {
+            vJoy joystick;
+            bool acquired;
+            joystick = new vJoy();
+            acquired = joystick.acquireVJD(1);
+            joystick.resetAll();//have to reset before we use it
+            joystick.Release(1);
+
 			if(!ProgramStarted)
 			{
 			    CSharpCodeProvider codeProvider = new CSharpCodeProvider();
 			    codeProvider.CreateCompiler();
 			    //add compiler parameters
-			    CompilerParameters compilerParams = new CompilerParameters();
-			    foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-			    {
-				    compilerParams.ReferencedAssemblies.Add(assembly.Location);
-			    }
-			    compilerParams.ReferencedAssemblies.Add("SBC.dll");
-			    compilerParams.ReferencedAssemblies.Add("myVJoyWrapper.dll");
-                compilerParams.ReferencedAssemblies.Add("Microsoft.DirectX.DirectInput.dll");
+
+                compilerParams = new CompilerParameters();
+                foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    compilerParams.ReferencedAssemblies.Add(assembly.Location);
+                }
+
 			    String[] fileNames = new String[1];
 
 			    CompilerResults results = codeProvider.CompileAssemblyFromFile(compilerParams, fileString.Text);
@@ -89,7 +98,7 @@ namespace Steel_Batallion_64_v2
 			    else
 			    {
                     errorBox.Lines  = null;
-				    CSharpObject = results.CompiledAssembly.CreateInstance("SBC.DynamicClass");
+                    CSharpObject = results.CompiledAssembly.CreateInstance("Steel_Batallion_64_v2.DynamicClass");
 
 				    // Create the thread object. This does not start the thread.
 				    workerObject = new Worker(ref CSharpObject);
