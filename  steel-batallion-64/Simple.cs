@@ -2,11 +2,9 @@
 //This example was meant to recreate the functionality I displayed for the system in the original release
 //however that also means that it is actually pretty complicated.
 
-using SBC;
-using myVJoyWrapper;
 using System;
 //using Microsoft.DirectX.DirectInput;
-namespace SBC {
+namespace Steel_Batallion_64_v2 {
 public class DynamicClass
 {
 SteelBattalionController controller;
@@ -32,7 +30,7 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 			controller.AddButtonLightMapping((ButtonEnum)(i-1),(ControllerLEDEnum)(i),true,baseLineIntensity);
 		}
 		
-         controller.AddButtonKeyLightMapping(ButtonEnum.CockpitHatch,            true, 3,    Microsoft.DirectX.DirectInput.Key.A, true);//last true means if you hold down the button,		
+         //controller.AddButtonKeyLightMapping(ButtonEnum.CockpitHatch,            true, 3,    Microsoft.DirectX.DirectInput.Key.A, true);//last true means if you hold down the button,		
 		 joystick = new vJoy();
 		 acquired = joystick.acquireVJD(1);
 		 joystick.resetAll();//have to reset before we use it
