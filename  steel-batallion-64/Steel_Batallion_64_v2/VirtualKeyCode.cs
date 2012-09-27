@@ -6,7 +6,7 @@ using System.Text;
 //HAD TO DUPLICATE this class in order to expose the enums from InputSimulator so that person using SBC
 //doesn't have to import both, wish there was a better way of doing this.
 
-namespace Steel_Batallion_64_v2
+namespace SBC
 {
     /// <summary>
     /// The list of VirtualKeyCodes (see: http://msdn.microsoft.com/en-us/library/ms645540(VS.85).aspx)

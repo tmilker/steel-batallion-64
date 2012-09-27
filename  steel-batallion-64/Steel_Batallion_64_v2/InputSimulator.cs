@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.DirectX.DirectInput;
 //http://damiproductions.darkbb.com/t504-c-sending-keys-with-the-sendinput-api
 
-namespace Steel_Batallion_64_v2
+namespace SBC
 {
     internal class InputSimulator
     {

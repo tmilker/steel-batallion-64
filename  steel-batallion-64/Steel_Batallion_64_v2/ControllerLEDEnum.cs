@@ -28,7 +28,7 @@
  *                                                                               * 
  *********************************************************************************/
 
-namespace Steel_Batallion_64_v2
+namespace SBC
 {
 	public enum ControllerLEDEnum {
 		EmergencyEject = 4,

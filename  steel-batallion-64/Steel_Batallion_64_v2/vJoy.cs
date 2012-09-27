@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace Steel_Batallion_64_v2
+namespace SBC
 {
 
     public enum VjdStat
