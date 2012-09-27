@@ -35,6 +35,49 @@ namespace SBC
 {
     //DO NOT CHANGE ORDER
     //THESE match the order they are presented in the USB packet
+	public enum ButtonEnum {
+		RightJoyMainWeapon,
+		RightJoyFire,
+		RightJoyLockOn,
+        Eject,
+		CockpitHatch,
+		Ignition,
+		Start,
+		MultiMonOpenClose,
+		MultiMonMapZoomInOut,
+		MultiMonModeSelect,
+		MultiMonSubMonitor,
+		MainMonZoomIn,
+		MainMonZoomOut,
+        FunctionFSS,
+        FunctionManipulator,
+        FunctionLineColorChange,
+		Washing,
+		Extinguisher,
+		Chaff,
+        FunctionTankDetach,
+        FunctionOverride,
+        FunctionNightScope,
+        FunctionF1,
+        FunctionF2,
+        FunctionF3,
+		WeaponConMain,
+		WeaponConSub,
+		WeaponConMagazine,
+		Comm1,
+		Comm2,
+		Comm3,
+		Comm4,
+		Comm5,
+		LeftJoySightChange,
+		ToggleFilterControl,
+		ToggleOxygenSupply,
+		ToggleFuelFlowRate,
+		ToggleBufferMaterial,
+		ToggleVTLocation,
+		TunerDialStateChange,
+		GearLeverStateChange
+	}
     public enum ButtonLights
     {
         //only lighted buttons
@@ -69,51 +112,6 @@ namespace SBC
         Comm4 = 32,
         Comm5 = 33,
     }
-
-	public enum Buttons {
-        Eject = 3,
-        CockpitHatch = 4,
-        Ignition = 5,
-        Start = 6,
-        MultiMonOpenClose = 7,
-        MultiMonMapZoomInOut = 8,
-        MultiMonModeSelect = 9,
-        MultiMonSubMonitor = 10,
-        MainMonZoomIn = 11,
-        MainMonZoomOut = 12,
-        FunctionFSS = 13,
-        FunctionManipulator = 15,
-        FunctionLineColorChange = 16,
-        Washing = 17,
-        Extinguisher = 18,
-        Chaff = 19,
-        FunctionTankDetach = 20,
-        FunctionOverride = 21,
-        FunctionNightScope = 22,
-        FunctionF1 = 23,
-        FunctionF2 = 24,
-        FunctionF3 = 25,
-        WeaponConMain = 26,
-        WeaponConSub = 27,
-        WeaponConMagazine = 28,
-        Comm1 = 29,
-        Comm2 = 30,
-        Comm3 = 31,
-        Comm4 = 32,
-        Comm5 = 33,
-        //non lighted buttons
-		RightJoyMainWeapon = 0,
-		RightJoyFire = 1,
-		RightJoyLockOn = 2,
-		LeftJoySightChange = 34,
-		ToggleFilterControl = 35,
-		ToggleOxygenSupply = 36,
-		ToggleFuelFlowRate = 37,
-		ToggleBufferMaterial = 38,
-		ToggleVTLocation = 39,
-		TunerDialStateChange = 40,
-        GearLeverStateChange = 41,
-	}
 	
 	public class ButtonMasks {
 		public static ButtonMask[] MaskList = new ButtonMask[50];
@@ -137,13 +135,13 @@ namespace SBC
                 MaskList[i] = new ButtonMask(offset, 1<<(i%8));
             }
 
-			MaskList[(int) Buttons.TunerDialStateChange]      = new ButtonMask(24, 0x0F);
-			MaskList[(int) Buttons.GearLeverStateChange]      = new ButtonMask(25, 0xFF);
+			MaskList[(int) ButtonEnum.TunerDialStateChange]      = new ButtonMask(24, 0x0F);
+			MaskList[(int) ButtonEnum.GearLeverStateChange]      = new ButtonMask(25, 0xFF);
 		}
 	}
 	
 	public class ButtonState {
-		public Buttons button;
+		public ButtonEnum button;
 		public bool currentState;
 		public bool changed;
 	}
