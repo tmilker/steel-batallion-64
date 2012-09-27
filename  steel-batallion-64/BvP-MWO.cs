@@ -1,12 +1,26 @@
 // MWO Config File
-// version 0.3
+// version 0.7
 // by von Pilsner (thanks to HackNFly!@!!!)
 //
-// Uses default MWO Keybindings as of Sept 26, 2012
+// Uses default MWO keybindings as of Sept 26, 2012
+// You must map the 'throttle' axis in-game though...
+//
+// For use with Steel-Batallion-64_v2_pre.zip 
+// 64 bit driver code/glue by HackNFly  http://code.google.com/p/steel-batallion-64/
+//
+// add the folowing to user.cfg
+//
+// cl_joystick_gain = 1.35
+// cl_joystick_invert_throttle = 0
+// cl_joystick_invert_pitch = 1
+// cl_joystick_invert_yaw = 0
+// cl_joystick_invert_turn = 0
+// cl_joystick_throttle_range = 0
+//
+// updated by Santiago Saldana Sept, 27, 2012
 
-
+using SBC;
 using System;
-using Microsoft.DirectX.DirectInput;
 namespace SBC {
 public class DynamicClass
 {
@@ -22,7 +36,7 @@ int pedalTriggerLevel = 50;//used in special handlign of left pedal,
 Microsoft.DirectX.DirectInput.Key jumpKey = Microsoft.DirectX.DirectInput.Key.Space;
 Microsoft.DirectX.DirectInput.Key stopKey = Microsoft.DirectX.DirectInput.Key.X;
 
-const int refreshRate = 20;//number of milliseconds between call to mainLoop
+const int refreshRate = 30;//number of milliseconds between call to mainLoop
 
 	//this gets called once by main program
     public void Initialize()
@@ -32,49 +46,50 @@ const int refreshRate = 20;//number of milliseconds between call to mainLoop
 
 		controller = new SteelBattalionController();
 		controller.Init(50);//50 is refresh rate in milliseconds
-		//set all SBC.Buttons by default to light up only when you press them down
+		//set all buttons by default to light up only when you press them down
 
 		for(int i=4;i<4+30;i++)
 		{
-			if (i != (int)SBC.ButtonLights.Eject)//excluding eject since we are going to flash that one
-			controller.AddButtonLightMapping((SBC.ButtonLights)(i-1),(ControllerLEDEnum)(i),true,baseLineIntensity);
+			if (i != (int)ButtonEnum.Eject)//excluding eject since we are going to flash that one
+			controller.AddButtonLightMapping((ButtonEnum)(i-1),(ControllerLEDEnum)(i),true,baseLineIntensity);
 		}
 
-		controller.AddButtonKeyMapping(SBC.Buttons.RightJoyMainWeapon,  Microsoft.DirectX.DirectInput.Key.D6, Microsoft.DirectX.DirectInput.Key.D5, true);
-		controller.AddButtonKeyMapping(SBC.Buttons.RightJoyLockOn,  Microsoft.DirectX.DirectInput.Key.R, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.Ignition,			true, 3,    Microsoft.DirectX.DirectInput.Key.P, true);
-		//controller.AddButtonKeyLightMapping(Buttons.Start,				true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.MultiMonOpenClose,	true, 3,    Microsoft.DirectX.DirectInput.Key.B, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.MultiMonMapZoomInOut,	true, 3,    Microsoft.DirectX.DirectInput.Key.B, true);
-		//controller.AddButtonKeyLightMapping(Buttons.MultiMonModeSelect,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		//controller.AddButtonKeyLightMapping(Buttons.MultiMonSubMonitor,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.MainMonZoomIn,		true, 3,    Microsoft.DirectX.DirectInput.Key.Z, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.MainMonZoomOut,		true, 3,    Microsoft.DirectX.DirectInput.Key.Z, true);
-		//controller.AddButtonKeyLightMapping(Buttons.FunctionFSS,			true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		//controller.AddButtonKeyLightMapping(Buttons.FunctionManipulator,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.FunctionLineColorChange,	true, 3,    Microsoft.DirectX.DirectInput.Key.H, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.Washing,				true, 3,    Microsoft.DirectX.DirectInput.Key.C, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.Extinguisher,		true, 3,    Microsoft.DirectX.DirectInput.Key.O, true);
-		//controller.AddButtonKeyLightMapping(Buttons.Chaff,				true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		//controller.AddButtonKeyLightMapping(Buttons.FunctionTankDetach,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.FunctionOverride,	true, 3,    Microsoft.DirectX.DirectInput.Key.O, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.FunctionNightScope,	true, 3,    Microsoft.DirectX.DirectInput.Key.N, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.FunctionF1,			true, 3,    Microsoft.DirectX.DirectInput.Key.Tab, true);
-		//controller.AddButtonKeyLightMapping(Buttons.FunctionF2,			true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.FunctionF3,			true, 3,    Microsoft.DirectX.DirectInput.Key.LeftControl, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.WeaponConMain,		true, 3,    Microsoft.DirectX.DirectInput.Key.RightControl, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.WeaponConSub,		true, 3,    Microsoft.DirectX.DirectInput.Key.BackSpace, true);
-		//controller.AddButtonKeyLightMapping(Buttons.WeaponConMagazine,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.Comm1,	true, 3,    Microsoft.DirectX.DirectInput.Key.F6, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.Comm2,	true, 3,    Microsoft.DirectX.DirectInput.Key.F8, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.Comm3,	true, 3,    Microsoft.DirectX.DirectInput.Key.F9, true);
-		//controller.AddButtonKeyLightMapping(Buttons.Comm4,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		controller.AddButtonKeyLightMapping(SBC.ButtonLights.Comm4,	true, 3,    Microsoft.DirectX.DirectInput.Key.RightBracket, true);
-		/*controller.AddButtonKeyMapping(SBC.Buttons.LeftJoySightChange,  Microsoft.DirectX.DirectInput.Key.Z, true);
-*/
+		controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,  Microsoft.DirectX.DirectInput.Key.D6, Microsoft.DirectX.DirectInput.Key.D5, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.RightJoyLockOn,true,3,  Microsoft.DirectX.DirectInput.Key.R, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.Eject,					true, 3,    Microsoft.DirectX.DirectInput.Key.O, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.Ignition,				true, 3,    Microsoft.DirectX.DirectInput.Key.P, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.Start,					true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.MultiMonOpenClose,		true, 3,    Microsoft.DirectX.DirectInput.Key.B, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.MultiMonMapZoomInOut,	true, 3,    Microsoft.DirectX.DirectInput.Key.B, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.MultiMonModeSelect,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.MultiMonSubMonitor,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.MainMonZoomIn,			true, 3,    Microsoft.DirectX.DirectInput.Key.Z, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.MainMonZoomOut,			true, 3,    Microsoft.DirectX.DirectInput.Key.Z, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionFSS,			true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionManipulator,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionLineColorChange,	true, 3,    Microsoft.DirectX.DirectInput.Key.H, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.Washing,					true, 3,    Microsoft.DirectX.DirectInput.Key.C, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.Extinguisher,			true, 3,    Microsoft.DirectX.DirectInput.Key.O, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.Chaff,					true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionTankDetach,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionOverride,		true, 3,    Microsoft.DirectX.DirectInput.Key.O, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionNightScope,		true, 3,    Microsoft.DirectX.DirectInput.Key.N, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionF1,				true, 3,    Microsoft.DirectX.DirectInput.Key.Tab, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionF2,			true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionF3,				true, 3,    Microsoft.DirectX.DirectInput.Key.LeftControl, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.WeaponConMain,			true, 3,    Microsoft.DirectX.DirectInput.Key.RightControl, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.WeaponConSub,			true, 3,    Microsoft.DirectX.DirectInput.Key.BackSpace, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.WeaponConMagazine,		true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.Comm1,	true, 3,    Microsoft.DirectX.DirectInput.Key.F6, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.Comm2,	true, 3,    Microsoft.DirectX.DirectInput.Key.F8, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.Comm3,	true, 3,    Microsoft.DirectX.DirectInput.Key.F9, true);
+		//controller.AddButtonKeyLightMapping(ButtonEnum.Comm4,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.Comm5,	true, 3,    Microsoft.DirectX.DirectInput.Key.RightBracket, true);
+		controller.AddButtonKeyMapping(ButtonEnum.LeftJoySightChange,  Microsoft.DirectX.DirectInput.Key.Z, true);
+
 		joystick = new vJoy();
 		acquired = joystick.acquireVJD(1);
-		joystick.resetAll();//have to reset before we use it*/
+		joystick.resetAll();//have to reset before we use it
 	}
 	
 	//this is necessary, as main program calls this to know how often to call mainLoop
@@ -106,44 +121,44 @@ const int refreshRate = 20;//number of milliseconds between call to mainLoop
 		return temp;
 	}
 
-	void updatePOVhat()
+	public void updatePOVhat()
 	{
-	int thumbstickDeadZone = 10;
-		POVdirection lastDirection = controller.POVhat;
+	int thumbstickDeadZone = 44;
+		SBC.POVdirection lastDirection = controller.POVhat;
 
-		if(( (Math.Abs(controller.SightChangeX) > thumbstickDeadZone) || (Math.Abs(controller.SightChangeY) > thumbstickDeadZone) ) && (controller.GearLever == -2) )//reverse)
+		if(( (Math.Abs(controller.SightChangeX) > thumbstickDeadZone) || (Math.Abs(controller.SightChangeY) > thumbstickDeadZone) ))
 		{
 			if(Math.Abs(controller.SightChangeX) > Math.Abs(controller.SightChangeY))
 				if(controller.SightChangeX <0)
-					controller.POVhat = POVdirection.LEFT;
+					controller.POVhat = SBC.POVdirection.LEFT;
 				else
-					controller.POVhat = POVdirection.RIGHT;
+					controller.POVhat = SBC.POVdirection.RIGHT;
 			else
 				if(controller.SightChangeY <0)
-					controller.POVhat = POVdirection.DOWN;
+					controller.POVhat = SBC.POVdirection.DOWN;
 				else
-					controller.POVhat = POVdirection.UP;
+					controller.POVhat = SBC.POVdirection.UP;
 
 		}
 		else
 		{
-			controller.POVhat = POVdirection.CENTER;	
+			controller.POVhat = SBC.POVdirection.CENTER;	
 		}
 
 		if(lastDirection != controller.POVhat)
 		{
 			switch(lastDirection)
 			{
-				case POVdirection.LEFT:
+				case SBC.POVdirection.LEFT:
 					controller.sendKeyUp(Microsoft.DirectX.DirectInput.Key.Left);
 					break;
-				case POVdirection.RIGHT:
+				case SBC.POVdirection.RIGHT:
 					controller.sendKeyUp(Microsoft.DirectX.DirectInput.Key.Right);
 					break;
-				case POVdirection.DOWN:
+				case SBC.POVdirection.DOWN:
 					controller.sendKeyUp(Microsoft.DirectX.DirectInput.Key.Up);
 					break;
-				case POVdirection.UP:
+				case SBC.POVdirection.UP:
 					controller.sendKeyUp(Microsoft.DirectX.DirectInput.Key.Down);
 					break;
 			}
@@ -152,90 +167,25 @@ const int refreshRate = 20;//number of milliseconds between call to mainLoop
 		{
 			switch(controller.POVhat)
 			{
-				case POVdirection.LEFT:
+				case SBC.POVdirection.LEFT:
 					controller.sendKeyDown(Microsoft.DirectX.DirectInput.Key.Left);
 					break;
-				case POVdirection.RIGHT:
+				case SBC.POVdirection.RIGHT:
 					controller.sendKeyDown(Microsoft.DirectX.DirectInput.Key.Right);
 					break;
-				case POVdirection.DOWN:
+				case SBC.POVdirection.DOWN:
 					controller.sendKeyDown(Microsoft.DirectX.DirectInput.Key.Up);
 					break;
-				case POVdirection.UP:
+				case SBC.POVdirection.UP:
 					controller.sendKeyDown(Microsoft.DirectX.DirectInput.Key.Down);
 					break;
 			}
 		}
 	}
 	
-	
-
-	//this gets called once every refreshRate milliseconds by main program
-	public void mainLoop()
+	public void evaluateLeftPedal()
 	{
-	
-		joystick.setAxis(1,controller.AimingX,HID_USAGES.HID_USAGE_X);
-		joystick.setAxis(1,controller.AimingY,HID_USAGES.HID_USAGE_Y);
-		joystick.setAxis(1,(controller.RightPedal - controller.MiddlePedal),HID_USAGES.HID_USAGE_Z);//throttle
-		joystick.setAxis(1,controller.RotationLever,HID_USAGES.HID_USAGE_RZ);
-		joystick.setAxis(1,controller.SightChangeX,HID_USAGES.HID_USAGE_SL0);		
-		joystick.setAxis(1,controller.SightChangeY,HID_USAGES.HID_USAGE_RX);				
-		joystick.setAxis(1,controller.LeftPedal,HID_USAGES.HID_USAGE_RY);						
-		joystick.setAxis(1,controller.GearLever,HID_USAGES.HID_USAGE_SL1);
-		
-		joystick.setContPov(1,getDegrees(controller.SightChangeX,controller.SightChangeY),1);
-
-		// toggle tricks!!!
-	
-			if(controller.GetButtonState(34)) //FILT Toggle
-			{
-					controller.AddButtonKeyMapping(Buttons.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.BackSlash, true);
-					joystick.setButton((bool)controller.GetButtonState(1),(uint)1,(char)(15));
-			}
-			else
-			{
-					controller.AddButtonKeyMapping(Buttons.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.NoConvert, true);
-					joystick.setButton((bool)controller.GetButtonState(1),(uint)1,(char)(0));
-			}
-			
-			if(controller.GetButtonState(35)) //O2 Supply Toggle
-			{
-					controller.AddButtonKeyMapping(Buttons.RightJoyMainWeapon,  Microsoft.DirectX.DirectInput.Key.D6, true);
-			}
-			else
-			{
-					controller.AddButtonKeyMapping(Buttons.RightJoyMainWeapon,  Microsoft.DirectX.DirectInput.Key.D5, true);
-			}
-
-			if(controller.GetButtonState(36)) //Fuel Flow Toggle
-			{
-					//controller.AddButtonKeyMapping(Buttons.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.BackSlash, true);
-			}
-			else
-			{
-					//controller.AddButtonKeyMapping(Buttons.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.Return, true); //I don't know how to bind mouse 1
-			}
-
-			if(controller.GetButtonState(37)) //Buffer Toggle
-			{
-					//controller.AddButtonKeyMapping(Buttons.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.BackSlash, true);
-			}
-			else
-			{
-					//controller.AddButtonKeyMapping(Buttons.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.Return, true); //I don't know how to bind mouse 1
-			}
-
-			if(controller.GetButtonState(38)) //VT-Location Toggle
-			{
-					//controller.AddButtonKeyMapping(Buttons.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.BackSlash, true);
-			}
-			else
-			{
-					//controller.AddButtonKeyMapping(Buttons.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.Return, true); //I don't know how to bind mouse 1
-			}
-			
-		
-    	if(controller.LeftPedal > pedalTriggerLevel)
+	    	if(controller.LeftPedal > pedalTriggerLevel)
     	{
 	    	//take care of the button logic separately, to be less confusing
     		if(!jumpPressed)//if not currently holding down jump key
@@ -286,15 +236,55 @@ const int refreshRate = 20;//number of milliseconds between call to mainLoop
 			    jumpPressed = false;
 		    }
 	    }
+	}
 
-		joystick.sendUpdate(1);
-	}
-	
-	//this gets called at the end of the program and must be present, as it cleans up resources
-	public void shutDown()
+	//this gets called once every refreshRate milliseconds by main program
+	public void mainLoop()
 	{
-		controller.UnInit();
-		joystick.Release(1);
+	updatePOVhat();
+		
+		joystick.setAxis(1,controller.AimingX,HID_USAGES.HID_USAGE_X);
+		joystick.setAxis(1,controller.AimingY,HID_USAGES.HID_USAGE_Y);
+		joystick.setAxis(1,(controller.RightPedal - controller.MiddlePedal),HID_USAGES.HID_USAGE_Z);//throttle
+		joystick.setAxis(1,controller.RotationLever,HID_USAGES.HID_USAGE_RZ);
+		joystick.setAxis(1,controller.SightChangeX,HID_USAGES.HID_USAGE_SL0);		
+		joystick.setAxis(1,controller.SightChangeY,HID_USAGES.HID_USAGE_RX);				
+		joystick.setAxis(1,controller.LeftPedal,HID_USAGES.HID_USAGE_RY);						
+		joystick.setAxis(1,controller.GearLever,HID_USAGES.HID_USAGE_SL1);
+		joystick.setContPov(1,getDegrees(controller.SightChangeX,controller.SightChangeY),1);
+
+		// toggle tricks!!!
+			if(controller.GetButtonState(ButtonEnum.ToggleFilterControl)) //FILT Toggle
+			{
+					controller.AddButtonKeyMapping(ButtonEnum.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.BackSlash, true);
+					//joystick.setButton((bool)controller.GetButtonState(1),(uint)1,(char)(15));
+			}
+			else
+			{
+					controller.AddButtonKeyMapping(ButtonEnum.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.NoConvert, true);
+					//joystick.setButton((bool)controller.GetButtonState(1),(uint)1,(char)(0));
+			}
+			
+			if(controller.GetButtonState(ButtonEnum.ToggleOxygenSupply)) // O2 Supply Toggle
+			{
+					controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,  Microsoft.DirectX.DirectInput.Key.D6, true);
+			}
+			else
+			{
+					controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,  Microsoft.DirectX.DirectInput.Key.D5, true);
+			}
+
+		
+			evaluateLeftPedal();
+			joystick.sendUpdate(1);
+		}
+		
+		//this gets called at the end of the program and must be present, as it cleans up resources
+		public void shutDown()
+		{
+			controller.sendKeyUp(Microsoft.DirectX.DirectInput.Key.LeftControl);
+			controller.UnInit();
+			joystick.Release(1);
+		}
 	}
-}
 }

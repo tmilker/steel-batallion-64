@@ -111,7 +111,7 @@ namespace SBC
 		#region Public and Private variables
 		private DateTime LastDataEventDate = DateTime.Now;
 		private UsbDevice MyUsbDevice;
-        private Hashtable ButtonLights = new Hashtable();
+        private Hashtable ButtonLightsHash = new Hashtable();
         private Hashtable ButtonKeys = new Hashtable();
         private bool updateGearLights = true;
         private int gearLightIntensity = 3;
@@ -177,76 +177,64 @@ namespace SBC
                 SetLEDState((ControllerLEDEnum)((int)ControllerLEDEnum.GearN + gearValue), gearLightIntensity, false);
         }
 
-        public void AddButtonKeyLightMapping(ButtonLights button, bool lightOnHold, int intensity, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
+        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             AddButtonLightMapping(button, lightOnHold, intensity);
             AddButtonKeyMapping(button, keyCode, holdDown);
         }
 
-        public void AddButtonKeyLightMapping(ButtonLights button, bool lightOnHold, int intensity, Microsoft.DirectX.DirectInput.Key keyCode1, Microsoft.DirectX.DirectInput.Key keyCode2, bool holdDown)
+        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, Microsoft.DirectX.DirectInput.Key keyCode1, Microsoft.DirectX.DirectInput.Key keyCode2, bool holdDown)
         {
             AddButtonLightMapping(button, lightOnHold, intensity);
             AddButtonKeyMapping(button, keyCode1, keyCode2, holdDown);
         }
 
-        public void AddButtonLightMapping(ButtonLights button, bool lightOnHold, int intensity)
+        public void AddButtonLightMapping(ButtonEnum button, bool lightOnHold, int intensity)
         {
             int buttonEquivalent = (int)button;
-            ControllerLEDEnum light = (ControllerLEDEnum)GetLightForButton(button);
-            AddButtonLightMapping(button, light, lightOnHold, intensity);
+            ButtonLights[] values = (ButtonLights[]) Enum.GetValues(typeof(ButtonLights));
+			for(int i = 0; i < values.Length; i++)
+                if ((int)button == (int)values[i])
+                {
+                    ControllerLEDEnum light = (ControllerLEDEnum)GetLightForButton(button);
+                    AddButtonLightMapping(button, light, lightOnHold, intensity);
+                    break;
+                }
         }
 
-        public void AddButtonLightMapping(ButtonLights button, ControllerLEDEnum LED,bool lightOnHold,int intensity)
+        public void AddButtonLightMapping(ButtonEnum button, ControllerLEDEnum LED,bool lightOnHold,int intensity)
         {
-            /*if (!ButtonLights.ContainsKey(button))
-                ButtonLights.Add((int)button, new LightProperties(LED, lightOnHold, intensity));
-            else*/
-            if (ButtonLights.Contains((int)button))
-                ButtonLights.Remove((int)button);//to save on later garbage collection
-            ButtonLights[(int)button] = new LightProperties(LED, lightOnHold, intensity);
-            
+            int buttonEquivalent = (int)button;
+            ButtonLights[] values = (ButtonLights[]) Enum.GetValues(typeof(ButtonLights));
+			for(int i = 0; i < values.Length; i++)
+                if ((int)button == (int)values[i])
+                {
+                    if (ButtonLightsHash.Contains((int)button))
+                        ButtonLightsHash.Remove((int)button);//to save on later garbage collection
+                    ButtonLightsHash[(int)button] = new LightProperties(LED, lightOnHold, intensity);
+                    break;
+                }
         }
 
-        public void AddButtonKeyMapping(ButtonLights button, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
-        {
-            AddButtonKeyMapping((int)button, keyCode, holdDown);
-        }
-
-        public void AddButtonKeyMapping(Buttons button, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
-        {
-            AddButtonKeyMapping((int)button, keyCode, holdDown);
-        }
-
-
-        public void AddButtonKeyMapping(int button, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
+        public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             if (ButtonKeys.Contains((int)button))
                 ButtonKeys.Remove((int)button);//to save on later garbage collection
             ButtonKeys[(int)button] = new KeyProperties(keyCode, holdDown);
         }
 
-        public void AddButtonKeyMapping(Buttons button, Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
-        {
-            AddButtonKeyMapping((int)button, modifier, keyCode, holdDown);
-        }
-
-        public void AddButtonKeyMapping(ButtonLights button, Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
-        {
-            AddButtonKeyMapping((int)button, modifier, keyCode, holdDown);
-        }
-
-        public void AddButtonKeyMapping(int button, Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
+        public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             ButtonKeys[(int)button] = new KeyProperties(modifier,keyCode, holdDown);
         }
 
-        public Microsoft.DirectX.DirectInput.Key GetButtonKey(Buttons button)
+        public Microsoft.DirectX.DirectInput.Key GetButtonKey(ButtonEnum button)
         {
             KeyProperties value = (KeyProperties)(ButtonKeys[(int)button]);
             return value.keyCode1;
         }
 
-        private ControllerLEDEnum GetLightForButton(ButtonLights button)
+        private ControllerLEDEnum GetLightForButton(ButtonEnum button)
         {
             int buttonNumber =(int)button;
             if( buttonNumber >= 3 && buttonNumber <33)
@@ -456,7 +444,7 @@ namespace SBC
             Array.Copy(buf, 0, rawControlData, 0, readByteCount);
 
             //moved this section out of CheckStateChanged since we want this to go off after the data from buf has been copied over to rawControlData
-			if ((Enum.GetValues(typeof(Buttons)).Length > 0) && (this.ButtonStateChanged != null))
+			if ((Enum.GetValues(typeof(ButtonEnum)).Length > 0) && (this.ButtonStateChanged != null))
 				ButtonStateChanged(this,stateChangedArray);
 			
 
@@ -473,6 +461,16 @@ namespace SBC
 
             return ((rawControlData[mask.bytePos] & mask.maskValue) > 0);
         }
+
+        /// <summary>
+        /// Checks the individual button state
+        /// </summary>
+        /// <param name="buf">Int value of button enum</param>
+        public bool GetButtonState(ButtonEnum button)
+        {
+            return GetButtonState((int)button);
+        }
+
         /// <summary>
         /// Checks if individual button state has changed
         /// </summary>
@@ -510,7 +508,7 @@ namespace SBC
 		/// </summary>
 		/// <param name="buf">Raw data buffer retrieved from the controller</param>
 		private void CheckStateChanged(byte[] buf) {
-			Buttons[] values = (Buttons[]) Enum.GetValues(typeof(Buttons));
+			ButtonEnum[] values = (ButtonEnum[]) Enum.GetValues(typeof(ButtonEnum));
 			stateChangedArray = new ButtonState[values.Length];
             bool updateLights = false;
 			for(int i = 0; i < values.Length; i++) 
@@ -518,24 +516,24 @@ namespace SBC
 				ButtonMasks.ButtonMask mask = ButtonMasks.MaskList[(int) values[i]];
 				
 				ButtonState state = new ButtonState();
-				state.button = (Buttons) values[i];
+				state.button = (ButtonEnum) values[i];
 				state.currentState = ((buf[mask.bytePos] & mask.maskValue) > 0);
 				state.changed = isStateChanged(buf, mask.bytePos, mask.maskValue);
-                Buttons currentButton = (Buttons)(i);
+                ButtonEnum currentButton = (ButtonEnum)(i);
 
                 //only do something if button changed, and button was pressed and button is in hashtable
 				if (state.changed)
 				{
-                    if (updateGearLights && state.button == Buttons.GearLeverStateChange)
+                    if (updateGearLights && state.button == ButtonEnum.GearLeverStateChange)
                     {
                         GearLightsRefresh((int)unchecked((sbyte)buf[25]));//copied this code from GearLever accessor, changed it since we need ot
                         updateLights = true;
                     }
                     //check button - light mapping
-					if(ButtonLights.ContainsKey(i))
+					if(ButtonLightsHash.ContainsKey(i))
 					{
 						updateLights = true;
-						LightProperties currentLightProperties = (LightProperties)(ButtonLights[i]);
+						LightProperties currentLightProperties = (LightProperties)(ButtonLightsHash[i]);
 
 						if (currentLightProperties.lightOnHold)
 							if(state.currentState)
