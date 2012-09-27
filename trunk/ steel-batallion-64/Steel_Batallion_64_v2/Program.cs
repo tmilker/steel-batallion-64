@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Steel_Batallion_64_v2
+namespace SBC
 {
     static class Program
     {

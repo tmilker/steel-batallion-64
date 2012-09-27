@@ -1,4 +1,4 @@
-﻿namespace Steel_Batallion_64_v2
+﻿namespace SBC
 {
     partial class Form1
     {
