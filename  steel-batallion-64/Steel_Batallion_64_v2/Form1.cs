@@ -23,6 +23,7 @@ namespace SBC
 		Thread workerThread;
         CompilerParameters compilerParams;
 		bool ProgramStarted = false;
+        bool firstTime = true;
 		
 		public Form1(string[] args)
 		{
@@ -66,6 +67,10 @@ namespace SBC
 			    //add compiler parameters
 
                 compilerParams = new CompilerParameters();
+                if (firstTime)//simple hack to fix issues with Microsoft.DirectX.DirectInput.dll not being able to be loaded multiple times
+                {
+                    compilerParams.ReferencedAssemblies.Add("Microsoft.DirectX.DirectInput.dll");
+                }
                 foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
                     compilerParams.ReferencedAssemblies.Add(assembly.Location);
@@ -89,6 +94,7 @@ namespace SBC
 			    }
 			    else
 			    {
+                    firstTime = false;//once we create a sucessful assembly, we don't need to keep referencing DirectX.Direcinput
                     errorBox.Lines  = null;
                     CSharpObject = results.CompiledAssembly.CreateInstance("SBC.DynamicClass");
 
