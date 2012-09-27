@@ -1,8 +1,0 @@
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\directinputtest\obj\Debug\ResolveAssemblyReference.cache
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\directinputtest\obj\Debug\directinputtest.Form1.resources
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\directinputtest\obj\Debug\directinputtest.Properties.Resources.resources
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\directinputtest\obj\Debug\directinputtest.csproj.GenerateResource.Cache
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\directinputtest\bin\Debug\directinputtest.exe
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\directinputtest\bin\Debug\directinputtest.pdb
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\directinputtest\obj\Debug\directinputtest.exe
-C:\Users\Santiago\Documents\Visual Studio 2008\Projects\Steel-Batallion-64\directinputtest\obj\Debug\directinputtest.pdb
