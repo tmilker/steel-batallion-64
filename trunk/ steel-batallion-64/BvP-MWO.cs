@@ -257,12 +257,12 @@ const int refreshRate = 30;//number of milliseconds between call to mainLoop
 			if(controller.GetButtonState(ButtonEnum.ToggleFilterControl)) //FILT Toggle
 			{
 					controller.AddButtonKeyMapping(ButtonEnum.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.BackSlash, true);
-					//joystick.setButton((bool)controller.GetButtonState(1),(uint)1,(char)(15));
+					joystick.setButton(controller.GetButtonState(ButtonEnum.RightJoyFire),1,15);
 			}
 			else
 			{
 					controller.AddButtonKeyMapping(ButtonEnum.RightJoyFire,  Microsoft.DirectX.DirectInput.Key.NoConvert, true);
-					//joystick.setButton((bool)controller.GetButtonState(1),(uint)1,(char)(0));
+					joystick.setButton(controller.GetButtonState(ButtonEnum.RightJoyFire),1,0);
 			}
 			
 			if(controller.GetButtonState(ButtonEnum.ToggleOxygenSupply)) // O2 Supply Toggle
