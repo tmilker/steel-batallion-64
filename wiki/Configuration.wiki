@@ -159,7 +159,7 @@ controller.AddButtonKeyLightMapping(ButtonEnum.CockpitHatch,            false, 3
 The third parameter controls the light intensity, any value from 1 - 15 is acceptable.
 
 In order to define what key you want the button to press you need to know the DirectX.DirectInput key enumerations, they are available here:
-http://msdn.microsof...4(v=vs.85).aspx
+[http://msdn.microsoft.com/en-us/library/windows/desktop/bb321074(v=vs.85).aspx http://msdn.microsoft.com/en-us/library/windows/desktop/bb321074(v=vs.85).aspx]
 
 If you make a mistake typing one in, the program will let you know inside the text box labeled Errors.  it'll tell you a line and column number of where the mistake was made.  
 
