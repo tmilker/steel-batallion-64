@@ -4,7 +4,7 @@
 
 using System;
 using Microsoft.DirectX.DirectInput;
-namespace Steel_Batallion_64_v2 {
+namespace SBC{
 public class DynamicClass
 {
 SteelBattalionController controller;
