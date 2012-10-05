@@ -29,9 +29,13 @@ vJoy joystick;
 bool acquired;
 
 bool jumpPressed = false;
-
 bool stopPressed = false;//used in special handling of left pedal
+
+bool currentResetValue;
+bool lastResetValue;//used in assessing when to flip lights
+
 int pedalTriggerLevel = 50;//used in special handlign of left pedal, 
+
 
 Microsoft.DirectX.DirectInput.Key jumpKey = Microsoft.DirectX.DirectInput.Key.Space;
 Microsoft.DirectX.DirectInput.Key stopKey = Microsoft.DirectX.DirectInput.Key.X;
@@ -67,13 +71,13 @@ const int refreshRate = 30;//number of milliseconds between call to mainLoop
 		controller.AddButtonKeyLightMapping(ButtonEnum.MainMonZoomOut,			true, 3,    Microsoft.DirectX.DirectInput.Key.Z, true);
 		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionFSS,			true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
 		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionManipulator,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
-		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionLineColorChange,	true, 3,    Microsoft.DirectX.DirectInput.Key.H, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionLineColorChange,	false, 3,    Microsoft.DirectX.DirectInput.Key.H, true);
 		controller.AddButtonKeyLightMapping(ButtonEnum.Washing,					true, 3,    Microsoft.DirectX.DirectInput.Key.C, true);
 		controller.AddButtonKeyLightMapping(ButtonEnum.Extinguisher,			true, 3,    Microsoft.DirectX.DirectInput.Key.O, true);
 		//controller.AddButtonKeyLightMapping(ButtonEnum.Chaff,					true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
 		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionTankDetach,	true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
 		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionOverride,		true, 3,    Microsoft.DirectX.DirectInput.Key.O, true);
-		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionNightScope,		true, 3,    Microsoft.DirectX.DirectInput.Key.N, true);
+		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionNightScope,		false, 3,    Microsoft.DirectX.DirectInput.Key.N, true);
 		controller.AddButtonKeyLightMapping(ButtonEnum.FunctionF1,				true, 3,    Microsoft.DirectX.DirectInput.Key.Tab, true);
 		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionF2,			true, 3,    Microsoft.DirectX.DirectInput.Key.X, true);
 		//controller.AddButtonKeyLightMapping(ButtonEnum.FunctionF3,				true, 3,    Microsoft.DirectX.DirectInput.Key.LeftControl, true);
@@ -273,6 +277,13 @@ const int refreshRate = 30;//number of milliseconds between call to mainLoop
 			{
 					controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,  Microsoft.DirectX.DirectInput.Key.D5, true);
 			}
+			
+			currentResetValue = controller.GetButtonState((int)ButtonEnum.ToggleFuelFlowRate);
+			if(currentResetValue != lastResetValue && currentResetValue)
+			{
+				controller.TestLEDs(1);//reset lights
+			}
+			lastResetValue = currentResetValue;
 
 		
 			evaluateLeftPedal();

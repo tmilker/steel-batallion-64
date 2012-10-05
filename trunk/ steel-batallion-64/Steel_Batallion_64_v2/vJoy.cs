@@ -289,15 +289,16 @@ namespace SBC
         /// </summary>
         /// <param name="buttonNum">Button number, 0-31</param>
         /// <param name="value">True for button down, false for button up</param>
-        public void setButton(bool value, uint rID, char buttonNum)
+        public void setButton(bool value, uint rID, int buttonNum)
         {
+
             /*if (buttonNum >= 32)
                 throw new ArgumentOutOfRangeException("Button number out of range");*///having trouble with these, they don't seem to work with dynamic code
 
             if (value)
-                currentState[rID].Buttons |= (uint)(1 << buttonNum);
+                currentState[rID].Buttons |= (uint)(1 << (char)buttonNum);
             else
-                currentState[rID].Buttons &= (uint)~(1 << buttonNum);
+                currentState[rID].Buttons &= (uint)~(1 << (char)buttonNum);
         }
 
 
