@@ -23,7 +23,6 @@ namespace SBC
 		Thread workerThread;
         CompilerParameters compilerParams;
 		bool ProgramStarted = false;
-        bool firstTime = true;
 		
 		public Form1(string[] args)
 		{
@@ -94,7 +93,6 @@ namespace SBC
 			    }
 			    else
 			    {
-                    firstTime = false;//once we create a sucessful assembly, we don't need to keep referencing DirectX.Direcinput
                     errorBox.Lines  = null;
                     CSharpObject = results.CompiledAssembly.CreateInstance("SBC.DynamicClass");
 
@@ -136,28 +134,6 @@ namespace SBC
                 Properties.Settings.Default.storedFileName = fileString.Text = openFileDialog1.FileName;
                 Properties.Settings.Default.Save();
             }
-        }
-
-        private void aboutToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-AssemblyCopyrightAttribute copyright =
-(AssemblyCopyrightAttribute)AssemblyCopyrightAttribute.GetCustomAttribute(
-assembly, typeof( AssemblyCopyrightAttribute ) );
-AssemblyTitleAttribute title =
-(AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(
-assembly, typeof( AssemblyTitleAttribute ) );
-System.IO.FileInfo info = new System.IO.FileInfo( assembly.Location );
-DateTime date = info.LastWriteTime;
-
-MessageBox.Show(
-title.Title  +
-" version " + 
-assembly.GetName().Version.ToString() + "\n" +
-"released " +
-date.ToShortDateString() +
-"\nWritten by Santiago Saldana." + "\n" +
-"For the latest version, visit http://code.google.com/p/steel-batallion-64/", "About Steel-Batallion-64", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button2, 0, "http://code.google.com/p/steel-batallion-64/w/list");
         }
 	}
 	public class Worker
