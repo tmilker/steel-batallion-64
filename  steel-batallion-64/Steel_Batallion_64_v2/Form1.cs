@@ -112,12 +112,15 @@ namespace SBC
 
 		private void StopBtn_Click(object sender, EventArgs e)
 		{
-			workerObject.RequestStop();
-            // Use the Join method to block the current thread 
-            // until the object's thread terminates.
-            workerThread.Join();
-            Status.Text = "Stopped";
-            ProgramStarted = false;
+            if (ProgramStarted)
+            {
+                workerObject.RequestStop();
+                // Use the Join method to block the current thread 
+                // until the object's thread terminates.
+                workerThread.Join();
+                Status.Text = "Stopped";
+                ProgramStarted = false;
+            }
 		}
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
