@@ -64,11 +64,20 @@ Plug in your Steel Batallion Controller let it Install, Open up Device Manager a
 http://imageshack.us/a/img145/1747/updatedriversoftware.png
 http://imageshack.us/a/img825/7083/updatedriverslocation.png
 
-You should now have everything you need to run the program, double click on 
+You should now have everything you need to run the program, double click on the runSteelBatallion64 shortcut
+
+http://imageshack.us/a/img585/1166/programopening.png
+
+Next, click File,Open and select Simple.cs from the same directory where runSteelBatallion64 shortcut is located
+
+http://imageshack.us/a/img28/1848/opencsfile.png
+
+Click on Start, if all goes well, no Errors will show up inside the textbox, the Status label will change to Running and the lights on the controller will flash 5 times.
+
+http://imageshack.us/a/img99/2995/successs.png
 
 Calibration:
-4 axes are mapped even though there are 10 available MW4.exe requires you to install 3 PPJoy joysticks as it maps all 10 axes across 3 virtual joysticks.  Windows only supports a maximum 8 axes 32 button joystick.
-
-*[edit]* Calibration _IS_ required, check out the calibration page for instructions.
+Calibration is required, check out the calibration page for details.
+(Updates coming soon).
 
 That should be it, e-mail me if you have any problems.
