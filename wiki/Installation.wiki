@@ -33,7 +33,7 @@ After installing vJoy go to the directory where you downloaded vJoy2.0.1Apps.zip
 
 Close everything out and install LibUsbDotNet_Setup.2.2.8.  Nothing special here, just SKIP the USB filter section at the end, its not necessary.  If you had tried to install this before installing PPJoy and were not in Windows Test Mode then an error would show up over your Steel Batallion controller when you plugged it in
 
-http://imageshack.us/photo/my-images/40/sb64003.png/
+http://imageshack.us/a/img40/3258/sb64003.png
 
 Plug in your Steel Batallion Controller let it Install, Open up Device Manager and right click on the Steel Batallion Controller and select update drivers, select browse for driver and select the Drivers folder within the Steel Batallion Controller file.
 
