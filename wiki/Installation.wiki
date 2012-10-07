@@ -34,8 +34,25 @@ After installing vJoy go to the directory where you downloaded vJoy2.0.1Apps.zip
 Go on and run:
 vJoy2.0.1Apps\vJoyConf\vJoyConfx64\vJoyConf
 
+Check off all the axes as well as the additional axes.  Set the POVs to 0 and set the number of buttons to 32.
+
 It should look like this:
 http://imageshack.us/a/img402/6518/vjoyconfsettings.png
+
+Then click Apply.  You should hear the same noise you usually hear when you unplug and replug a USB device.  vJoy drive should now be ready.
+
+To test it out, go to Game Controllers tab in Windows, you can do this by typing in "set up usb" in the Windows 7 Search bar.  Its called "Set up USB game controllers"
+
+It should look like this:
+http://imageshack.us/a/img208/2446/setupusb.png
+
+Click on vJoy Device, and click on the Properties Button.
+It'll bring up the vJoy Device Properties window.  Click on the Test tab as circled below:
+http://imageshack.us/a/img594/6850/vjoydeviceproperties.png
+
+If you configured everything correctly and added the extra axes and buttons it should look like this:
+http://imageshack.us/a/img6/9487/vjoydevicetesttab.png
+
 
 
 
