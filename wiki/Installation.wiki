@@ -19,7 +19,7 @@ Download the Steel-Batallion-64 zip file from this site:
 
 Extract the zip file.  
 
-Currently I'm linking to vJoy's site.  I'll get permission to bundle it with my software if the author is OK with it.  In the meanwhile download these two files:
+Download these two files:
 http://vjoystick.sourceforge.net/redirect_download_x86x64.php
 http://vjoystick.sourceforge.net/redirect_download_vJoy2Aps.php
 
