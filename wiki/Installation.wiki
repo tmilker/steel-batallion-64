@@ -15,7 +15,7 @@ Running the Steel-Batallion-64-MW4 executable.
 Here is a synopsis of the video.  (In case it doesn't work)
 
 Download the Steel-Batallion-64 zip file from this site:
-[http://code.google.com/p/steel-batallion-64/downloads/detail?name=Steel-Batallion-64_1.0.1.zip&can=2&q=]
+[http://steel-batallion-64.googlecode.com/files/Steel-Batallion-64.zip]
 
 Extract the zip file.  
 
