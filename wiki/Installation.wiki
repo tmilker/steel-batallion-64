@@ -56,7 +56,10 @@ http://imageshack.us/a/img6/9487/vjoydevicetesttab.png
 
 
 
-Close everything out and install LibUsbDotNet_Setup.2.2.8.  Nothing special here, just SKIP the USB filter section at the end, its not necessary.  If you had tried to install this before installing PPJoy and were not in Windows Test Mode then an error would show up over your Steel Batallion controller when you plugged it in
+Close everything out and install LibUsbDotNet_Setup.2.2.8.
+[http://sourceforge.net/projects/libusbdotnet/files/latest/download]
+
+Nothing special here, just SKIP the USB filter section at the end, its not necessary.  If you had tried to install this before installing PPJoy and were not in Windows Test Mode then an error would show up over your Steel Batallion controller when you plugged it in
 
 http://imageshack.us/a/img40/3258/sb64003.png
 
