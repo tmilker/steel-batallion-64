@@ -69,7 +69,7 @@ namespace SBC
                 compilerParams = new CompilerParameters();
                 if (firstTime)//simple hack to fix issues with Microsoft.DirectX.DirectInput.dll not being able to be loaded multiple times
                 {
-                    compilerParams.ReferencedAssemblies.Add("Microsoft.DirectX.DirectInput.dll");
+                    //compilerParams.ReferencedAssemblies.Add("Microsoft.DirectX.DirectInput.dll");
                 }
                 foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
@@ -173,7 +173,14 @@ date.ToShortDateString() +
 		// This method will be called when the thread is started.
 		public void DoWork()
 		{
-			CSharpObject.GetType().InvokeMember("Initialize", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
+            try
+            {
+                CSharpObject.GetType().InvokeMember("Initialize", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+            }
 
 			int refreshRate = (int)CSharpObject.GetType().InvokeMember("getRefreshRate", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
 			while (!_shouldStop)
