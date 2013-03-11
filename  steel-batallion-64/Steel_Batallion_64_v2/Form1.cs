@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define normalMode //used for testing of configuration files using testConfig.cs
+using System;
 using System.Threading;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +13,6 @@ using  System.Reflection;
 using  System.CodeDom.Compiler;
 using  Microsoft.CSharp;
 //using Microsoft.DirectX.DirectInput;
-
 
 namespace SBC
 {
@@ -69,7 +69,7 @@ namespace SBC
                 compilerParams = new CompilerParameters();
                 if (firstTime)//simple hack to fix issues with Microsoft.DirectX.DirectInput.dll not being able to be loaded multiple times
                 {
-                    //compilerParams.ReferencedAssemblies.Add("Microsoft.DirectX.DirectInput.dll");
+                    compilerParams.ReferencedAssemblies.Add("Microsoft.DirectX.DirectInput.dll");
                 }
                 foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
@@ -173,23 +173,46 @@ date.ToShortDateString() +
 		// This method will be called when the thread is started.
 		public void DoWork()
 		{
+#if normalMode
             try
             {
                 CSharpObject.GetType().InvokeMember("Initialize", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
+
+
+		        int refreshRate = (int)CSharpObject.GetType().InvokeMember("getRefreshRate", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
+		        while (!_shouldStop)
+		        {
+			        CSharpObject.GetType().InvokeMember("mainLoop", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
+			        Thread.Sleep(refreshRate);
+		        }
+		        CSharpObject.GetType().InvokeMember("shutDown", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+            }
+#else
+            testConfig config;
+            config = new testConfig();
+            try
+            {
+                config.Initialize();
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.ToString());
             }
 
-			int refreshRate = (int)CSharpObject.GetType().InvokeMember("getRefreshRate", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
-			while (!_shouldStop)
-			{
-				CSharpObject.GetType().InvokeMember("mainLoop", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
-				Thread.Sleep(refreshRate);
-			}
-			CSharpObject.GetType().InvokeMember("shutDown", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
-		}
+            int refreshRate = config.getRefreshRate();
+            while (!_shouldStop)
+            {
+                config.mainLoop();
+                Thread.Sleep(refreshRate);
+            }
+            config.shutDown();
+#endif
+
+        }
 		public void RequestStop()
 		{
 			_shouldStop = true;
