@@ -226,6 +226,7 @@ namespace SBC
         public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             ButtonKeys[(int)button] = new KeyProperties(modifier,keyCode, holdDown);
+            int temp = 1;
         }
 
         public Microsoft.DirectX.DirectInput.Key GetButtonKey(ButtonEnum button)

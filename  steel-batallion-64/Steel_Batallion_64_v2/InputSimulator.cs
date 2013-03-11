@@ -23,12 +23,18 @@ namespace SBC
 
         #endregion
 
+        public static int ModifiedKeyStrokeDelay = 5;//number of milliseconds combination keys will be held down.
+                                              //this number was experimentally found out as the minimum necessary for MW4 to respond to modified
+                                              //keystroke
+
         public static void SimulateKeyDown(Microsoft.DirectX.DirectInput.Key key)
         {
             INPUT structure = new INPUT();
             structure.type = (int)InputType.INPUT_KEYBOARD;
-            structure.ki.wScan = (short)key;
-            structure.ki.dwFlags = (int)((int)KEYEVENTF.KEYDOWN | (uint)KEYEVENTF.SCANCODE);
+            //structure.ki.wVk = VkKeyScan((char)key);
+            structure.ki.wScan = (ushort)key;
+            structure.ki.dwFlags = (uint)((int)KEYEVENTF.KEYDOWN | (uint)KEYEVENTF.SCANCODE);
+            structure.ki.time = 0;
             structure.ki.dwExtraInfo = GetMessageExtraInfo();
 
             INPUT[] pInputs = new INPUT[] { structure };
@@ -40,8 +46,10 @@ namespace SBC
         {
             INPUT structure = new INPUT();
             structure.type = (int)InputType.INPUT_KEYBOARD;
-            structure.ki.wScan = (short)key;
-            structure.ki.dwFlags = (int)((int)KEYEVENTF.KEYUP | (uint)KEYEVENTF.SCANCODE);
+            //structure.ki.wVk = VkKeyScan((char)key);
+            structure.ki.wScan = (ushort)key;
+            structure.ki.dwFlags = (uint)((int)KEYEVENTF.KEYUP | (uint)KEYEVENTF.SCANCODE);
+            structure.ki.time = 0;
             structure.ki.dwExtraInfo = GetMessageExtraInfo();
 
             INPUT[] pInputs = new INPUT[] { structure };
@@ -51,52 +59,21 @@ namespace SBC
 
         public static void SimulateKeyPress(Microsoft.DirectX.DirectInput.Key key)
         {
-            INPUT structure = new INPUT();
-            structure.type = (int)InputType.INPUT_KEYBOARD;
-            structure.ki.wScan = (short)key;
-            structure.ki.dwFlags = (int)((int)KEYEVENTF.KEYDOWN | (uint)KEYEVENTF.SCANCODE);
-            structure.ki.dwExtraInfo = GetMessageExtraInfo();
-
-            INPUT input2 = new INPUT();
-            input2.type = (int)InputType.INPUT_KEYBOARD;
-            input2.ki.wScan = (short)key;//changed this line
-            input2.mi.dwFlags = (int)((int)KEYEVENTF.KEYUP | (uint)KEYEVENTF.SCANCODE);
-            input2.ki.dwExtraInfo = GetMessageExtraInfo();
-
-            INPUT[] pInputs = new INPUT[] { structure, input2 };
-
-            SendInput(2, pInputs, Marshal.SizeOf(structure));
+            SimulateKeyDown(key);
+            SimulateKeyUp(key);
         }
 
         public static void SimulateModifiedKeyStroke(Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keycode)
         {
-            INPUT structure = new INPUT();
-            structure.type = (int)InputType.INPUT_KEYBOARD;
-            structure.ki.wScan = (short)modifier;
-            structure.ki.dwFlags = (int)((int)KEYEVENTF.KEYDOWN | (uint)KEYEVENTF.SCANCODE);
-            structure.ki.dwExtraInfo = GetMessageExtraInfo();
+            SimulateKeyDown(modifier);
+            SimulateKeyDown(keycode);
+            System.Threading.Thread.Sleep(ModifiedKeyStrokeDelay);
+            SimulateKeyUp(keycode);
+            SimulateKeyUp(modifier);
+            
 
-            INPUT input2 = new INPUT();
-            input2.type = (int)InputType.INPUT_KEYBOARD;
-            input2.ki.wScan = (short)keycode;//changed this line,input2 was structure before
-            input2.mi.dwFlags = (int)((int)KEYEVENTF.KEYDOWN | (uint)KEYEVENTF.SCANCODE);
-            input2.ki.dwExtraInfo = GetMessageExtraInfo();
-
-            INPUT structure2 = new INPUT();
-            structure.type = (int)InputType.INPUT_KEYBOARD;
-            structure.ki.wScan = (short)keycode;
-            structure.ki.dwFlags = (int)((int)KEYEVENTF.KEYUP | (uint)KEYEVENTF.SCANCODE);
-            structure.ki.dwExtraInfo = GetMessageExtraInfo();
-
-            INPUT input3 = new INPUT();
-            input2.type = (int)InputType.INPUT_KEYBOARD;
-            structure.ki.wScan = (short)modifier;
-            input2.mi.dwFlags = (int)((int)KEYEVENTF.KEYUP | (uint)KEYEVENTF.SCANCODE);
-            input2.ki.dwExtraInfo = GetMessageExtraInfo();
-
-            INPUT[] pInputs = new INPUT[] { structure, input2, structure2, input3 };
-
-            SendInput(4, pInputs, Marshal.SizeOf(structure));
+            //I tried doing this using several input statements, but it seems that the OS likes it if you spread them out
+            //if anyone knows more about this let me know, but this method works for now.
         }
 
         
@@ -128,10 +105,10 @@ namespace SBC
         [StructLayout(LayoutKind.Sequential)]
         public struct KEYBDINPUT
         {
-            public short wVk;
-            public short wScan;
-            public int dwFlags;
-            public int time;
+            public ushort wVk;
+            public ushort wScan;
+            public uint dwFlags;
+            public uint time;
             public IntPtr dwExtraInfo;
         }
 
