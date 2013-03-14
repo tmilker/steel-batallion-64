@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using Microsoft.DirectX.DirectInput;
 //http://damiproductions.darkbb.com/t504-c-sending-keys-with-the-sendinput-api
 
@@ -27,13 +28,52 @@ namespace SBC
                                               //this number was experimentally found out as the minimum necessary for MW4 to respond to modified
                                               //keystroke
 
+         /// <summary>
+        /// Determines if the <see cref="VirtualKeyCode"/> is an ExtendedKey
+        /// </summary>
+        /// <param name="keyCode">The key code.</param>
+        /// <returns>true if the key code is an extended key; otherwise, false.</returns>
+        /// <remarks>
+        /// The extended keys consist of the ALT and CTRL keys on the right-hand side of the keyboard; the INS, DEL, HOME, END, PAGE UP, PAGE DOWN, and arrow keys in the clusters to the left of the numeric keypad; the NUM LOCK key; the BREAK (CTRLPAUSE) key; the PRINT SCRN key; and the divide (/) and ENTER keys in the numeric keypad.
+        /// 
+        /// See http://msdn.microsoft.com/en-us/library/ms646267(v=vs.85).aspx Section "Extended-Key Flag"
+        /// </remarks>
+        public static bool IsExtendedKey(Microsoft.DirectX.DirectInput.Key keyCode)
+        {
+            if (
+                keyCode == Microsoft.DirectX.DirectInput.Key.Insert ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Delete ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Home ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.End ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Prior ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Next ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Right ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Up ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Left ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Down ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Numlock ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.BackSpace ||
+                keyCode == Microsoft.DirectX.DirectInput.Key.Divide)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
         public static void SimulateKeyDown(Microsoft.DirectX.DirectInput.Key key)
         {
             INPUT structure = new INPUT();
             structure.type = (int)InputType.INPUT_KEYBOARD;
             //structure.ki.wVk = VkKeyScan((char)key);
             structure.ki.wScan = (ushort)key;
-            structure.ki.dwFlags = (uint)((int)KEYEVENTF.KEYDOWN | (uint)KEYEVENTF.SCANCODE);
+            if(IsExtendedKey(key))
+                structure.ki.dwFlags = (uint)((int)KEYEVENTF.KEYDOWN | (uint)KEYEVENTF.SCANCODE | (uint)KEYEVENTF.EXTENDEDKEY);
+            else
+                structure.ki.dwFlags = (uint)((int)KEYEVENTF.KEYDOWN | (uint)KEYEVENTF.SCANCODE);
             structure.ki.time = 0;
             structure.ki.dwExtraInfo = GetMessageExtraInfo();
 
@@ -48,7 +88,10 @@ namespace SBC
             structure.type = (int)InputType.INPUT_KEYBOARD;
             //structure.ki.wVk = VkKeyScan((char)key);
             structure.ki.wScan = (ushort)key;
-            structure.ki.dwFlags = (uint)((int)KEYEVENTF.KEYUP | (uint)KEYEVENTF.SCANCODE);
+            if (IsExtendedKey(key))
+                structure.ki.dwFlags = (uint)((int)KEYEVENTF.KEYUP | (uint)KEYEVENTF.SCANCODE | (uint)KEYEVENTF.EXTENDEDKEY);
+            else
+                structure.ki.dwFlags = (uint)((int)KEYEVENTF.KEYUP | (uint)KEYEVENTF.SCANCODE);
             structure.ki.time = 0;
             structure.ki.dwExtraInfo = GetMessageExtraInfo();
 
@@ -69,13 +112,19 @@ namespace SBC
             SimulateKeyDown(keycode);
             System.Threading.Thread.Sleep(ModifiedKeyStrokeDelay);
             SimulateKeyUp(keycode);
-            SimulateKeyUp(modifier);
-            
-
-            //I tried doing this using several input statements, but it seems that the OS likes it if you spread them out
-            //if anyone knows more about this let me know, but this method works for now.
+            SimulateKeyUp(modifier);            
         }
 
+        public static void SimulateModifiedKeyStroke(Microsoft.DirectX.DirectInput.Key[] modifierKeyCodes, Microsoft.DirectX.DirectInput.Key keycode)
+        {
+            foreach (Microsoft.DirectX.DirectInput.Key k in modifierKeyCodes) { SimulateKeyDown(k); }
+            SimulateKeyDown(keycode);
+            System.Threading.Thread.Sleep(ModifiedKeyStrokeDelay);
+            SimulateKeyUp(keycode);
+            foreach (Microsoft.DirectX.DirectInput.Key k in modifierKeyCodes) { SimulateKeyUp(k); }
+        }
+
+                    
         
 
         [StructLayout(LayoutKind.Explicit)]
