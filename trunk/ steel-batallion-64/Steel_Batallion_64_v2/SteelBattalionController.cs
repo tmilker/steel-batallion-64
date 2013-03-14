@@ -74,10 +74,12 @@ namespace SBC
     {
         public Microsoft.DirectX.DirectInput.Key keyCode1;
         public Microsoft.DirectX.DirectInput.Key modifier;
+        public Microsoft.DirectX.DirectInput.Key[] modifierKeyCodes;
         public bool holdDown;
         public bool useModifier;
         public KeyProperties(Microsoft.DirectX.DirectInput.Key a, bool b)
         {
+            modifierKeyCodes = new Microsoft.DirectX.DirectInput.Key[0];
             modifier = (Microsoft.DirectX.DirectInput.Key)(0);
             keyCode1 = a;
             holdDown = b;
@@ -85,7 +87,16 @@ namespace SBC
         }
         public KeyProperties(Microsoft.DirectX.DirectInput.Key a, Microsoft.DirectX.DirectInput.Key b, bool c)//used when we have a modifier
         {
+            modifierKeyCodes = new Microsoft.DirectX.DirectInput.Key[0];
             modifier = a;
+            keyCode1 = b;
+            holdDown = c;
+            useModifier = true;
+        }
+        public KeyProperties(Microsoft.DirectX.DirectInput.Key[] a, Microsoft.DirectX.DirectInput.Key b, bool c)//used when we have a modifier
+        {
+            modifierKeyCodes = a;
+            modifier = (Microsoft.DirectX.DirectInput.Key)(0);
             keyCode1 = b;
             holdDown = c;
             useModifier = true;
@@ -189,6 +200,12 @@ namespace SBC
             AddButtonKeyMapping(button, keyCode1, keyCode2, holdDown);
         }
 
+        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, Microsoft.DirectX.DirectInput.Key[] modifierKeyCodes, Microsoft.DirectX.DirectInput.Key keyCode2, bool holdDown)
+        {
+            AddButtonLightMapping(button, lightOnHold, intensity);
+            AddButtonKeyMapping(button, modifierKeyCodes, keyCode2, holdDown);
+        }
+
         public void AddButtonLightMapping(ButtonEnum button, bool lightOnHold, int intensity)
         {
             int buttonEquivalent = (int)button;
@@ -226,7 +243,11 @@ namespace SBC
         public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             ButtonKeys[(int)button] = new KeyProperties(modifier,keyCode, holdDown);
-            int temp = 1;
+        }
+
+        public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key[] modifierKeyCodes, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
+        {
+            ButtonKeys[(int)button] = new KeyProperties(modifierKeyCodes, keyCode, holdDown);
         }
 
         public Microsoft.DirectX.DirectInput.Key GetButtonKey(ButtonEnum button)
@@ -557,7 +578,12 @@ namespace SBC
 						if (currentKeyProperties.useModifier)
 						{
                             if (state.currentState)//button is pressed, then press key
-                                InputSimulator.SimulateModifiedKeyStroke(currentKeyProperties.modifier, currentKeyProperties.keyCode1);
+                            {
+                                if (currentKeyProperties.modifierKeyCodes.Length > 0)
+                                    InputSimulator.SimulateModifiedKeyStroke(currentKeyProperties.modifierKeyCodes, currentKeyProperties.keyCode1);
+                                else
+                                    InputSimulator.SimulateModifiedKeyStroke(currentKeyProperties.modifier, currentKeyProperties.keyCode1);
+                            }
 						}
 						else
 						{
