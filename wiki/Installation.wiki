@@ -2,6 +2,9 @@
 
 = Installation =
 
+*WARNING WARNING WARNING*
+You must use an xbox->usb connector adapter NO GREATER than 3 FEET.  They come in 3ft and 6ft versions, the 6 ft version *WILL NOT WORK!!!*
+
 Installation involves a few steps.  
 Downloading and installing prerequisites,
 Installing LibUSB.NET 
