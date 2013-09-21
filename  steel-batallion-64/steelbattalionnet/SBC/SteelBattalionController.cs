@@ -135,7 +135,7 @@ namespace SBC
 		/// <summary>
 		/// The byte buffer that the raw control data is stored
 		/// </summary>
-		byte[] rawControlData = new Byte[26];
+		public byte[] rawControlData = new Byte[26];
 		
 		/// <summary>
 		/// The byte buffer that the raw LED data is stored
