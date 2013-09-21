@@ -72,7 +72,8 @@ Plug in your Steel Batallion Controller let it Install, Open up Device Manager a
 --------------------------
 [UPDATE!!!!]
 If you are running Windows 8, then I feel bad for you, however the modified inf file that is being used wit libUSB.NET is not signed.  In Windows 7 when you turn on Test Mode, you can install uncertified drivers, Windows 8 takes an extra step, you can find out how to do this here:
-http://laslow.net/2012/03/14/disable-driver-signature-enforcement-in-windows-8/
+[updated since old site is now down]
+http://sixcolumns.com/t/how-to-disable-and-bypass-driver-signature-enforcement-in-windows-8/151/2
 
 After this is complete, you can finish installing the driver.  Otherwise Windows 8 will complain saying it can't install 3rd party unsigned inf, or something along those lines.
 --------------------------
