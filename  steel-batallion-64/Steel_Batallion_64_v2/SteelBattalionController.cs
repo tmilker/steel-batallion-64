@@ -452,6 +452,16 @@ namespace SBC
 
             return ((rawControlData[mask.bytePos] & mask.maskValue) > 0);
         }
+
+        /// <summary>
+        /// Checks the individual button state
+        /// </summary>
+        /// <param name="buf">Int value of button enum</param>
+        public bool GetButtonState(SBC.ButtonEnum button)
+        {
+            return GetButtonState((int)button);
+        }
+
         /// <summary>
         /// Checks if individual button state has changed
         /// </summary>
