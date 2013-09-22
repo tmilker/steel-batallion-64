@@ -612,57 +612,86 @@ namespace SBC
 		/// Corresponds to the "Rotation Lever" joystick on the left.
 		/// </summary>
 		public int RotationLever {
-            get { return (int)unchecked((sbyte)rawControlData[13]); }
-		}
+            get { return getSignedAxisValue(13, 14); }
+        }
 
 		/// <summary>
 		/// Corresponds to the "Sight Change" analog stick on the "Rotation Lever" joystick.  X Axis value.
 		/// </summary>
 		public int SightChangeX {
-            get { return (int)unchecked((sbyte)rawControlData[15]); }
-		}
+            get { return getSignedAxisValue(15, 16); }
+        }
 
 		/// <summary>
 		/// Corresponds to the "Sight Change" analog stick on the "Rotation Lever" joystick.  Y Axis value.
 		/// </summary>
 		public int SightChangeY {
-            get { return (int)unchecked((sbyte)rawControlData[17]); }
-		}
+            get { return getSignedAxisValue(17, 18); }
+        }
 
 		/// <summary>
 		/// Corresponds to the "Aiming Lever" joystick on the right.  X Axis value.
 		/// </summary>
 		public int AimingX {
-			get { return (int) rawControlData[9]; }
+			get {return getAxisValue(9,10);}
 		}
 
 		/// <summary>
 		/// Corresponds to the "Aiming Lever" joystick on the right.  Y Axis value.
 		/// </summary>
 		public int AimingY {
-			get { return (int) rawControlData[11]; }
+            get { return getAxisValue(11, 12); }
 		}
+        /// <summary>
+        /// Used to bitshift array and actually return proper 10-bit value for axis.
+        /// </summary>
+        private int getAxisValue(int firstIndex, int SecondIndex)
+        {
+            int temp = rawControlData[firstIndex];
+            int temp2 = rawControlData[SecondIndex];
+            temp = temp << 2;
+            temp2 = temp2 >> 6;
+            temp = temp | temp2;
+            return temp;
+        }
+
+        /// <summary>
+        /// Used to bitshift array and actually return proper 10-bit value for axis.
+        /// </summary>
+        private int getSignedAxisValue(int firstIndex, int SecondIndex)
+        {
+            uint temp = rawControlData[firstIndex];
+            uint temp2 = rawControlData[SecondIndex];
+            short result;
+            temp = temp << 2;
+            temp2 = temp2 >> 6;
+            temp = temp | temp2;
+            if (rawControlData[firstIndex] >= 128)//we need to pad on some 1's so that we can use 16-bit 2's complement
+                temp |= 0xFC00;//0b1111110000000000
+            result = unchecked((short)temp);
+            return (int)result;
+        }
 
 		/// <summary>
 		/// Corresponds to the left pedal on the pedal block
 		/// </summary>
 		public int LeftPedal {
-			get { return (int) rawControlData[19]; }
-		}
+            get { return getAxisValue(19, 20); }
+        }
 
 		/// <summary>
 		/// Corresponds to the middle pedal on the pedal block
 		/// </summary>
 		public int MiddlePedal {
-			get { return (int) rawControlData[21]; }
-		}
+            get { return getAxisValue(21, 22); }
+        }
 
 		/// <summary>
 		/// Corresponds to the right pedal on the pedal block
 		/// </summary>
 		public int RightPedal {
-			get { return (int) rawControlData[23]; }
-		}
+            get { return getAxisValue(23, 24); }
+        }
 
 		/// <summary>
 		/// Corresponds to the tuner dial position.  The 9 o'clock postion is 0, and the 6 o'clock position is 12.

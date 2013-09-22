@@ -31,6 +31,7 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 		}
 		
          controller.AddButtonKeyLightMapping(ButtonEnum.CockpitHatch,            true, 3,    Microsoft.DirectX.DirectInput.Key.A, true);//last true means if you hold down the button,		
+		 controller.AddButtonKeyLightMapping(ButtonEnum.FunctionF1,				true, 3,    Microsoft.DirectX.DirectInput.Key.B, true);
 		 joystick = new vJoy();
 		 acquired = joystick.acquireVJD(1);
 		 joystick.resetAll();//have to reset before we use it
@@ -67,14 +68,27 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 	//this gets called once every refreshRate milliseconds by main program
 	public void mainLoop()
 	{
+	float lowValue = 124;
+	float highValue = 255;
+	int gearValue;
+	
+	if (controller.GearLever == -2)//R
+		gearValue = -255;
+	else if (controller.GearLever == -1)//N
+		gearValue = 124;		
+	else
+	{
+		gearValue = (int)(lowValue + (highValue - lowValue)*((controller.GearLever-1.0)/4.0));
+	}
+		joystick.setAxis(1,controller.GearLever,HID_USAGES.HID_USAGE_SL1);	
 		joystick.setAxis(1,controller.AimingX,HID_USAGES.HID_USAGE_X);
 		joystick.setAxis(1,controller.AimingY,HID_USAGES.HID_USAGE_Y);
-		joystick.setAxis(1,(controller.RightPedal - controller.MiddlePedal),HID_USAGES.HID_USAGE_Z);//throttle
+		joystick.setAxis(1,-1*(controller.RightPedal - controller.MiddlePedal),HID_USAGES.HID_USAGE_Z);//throttle
 		joystick.setAxis(1,controller.RotationLever,HID_USAGES.HID_USAGE_RZ);
 		joystick.setAxis(1,controller.SightChangeX,HID_USAGES.HID_USAGE_SL0);		
 		joystick.setAxis(1,controller.SightChangeY,HID_USAGES.HID_USAGE_RX);				
 		joystick.setAxis(1,controller.LeftPedal,HID_USAGES.HID_USAGE_RY);						
-		joystick.setAxis(1,controller.GearLever,HID_USAGES.HID_USAGE_SL1);
+
 		
 		joystick.setContPov(1,getDegrees(controller.SightChangeX,controller.SightChangeY),1);
 

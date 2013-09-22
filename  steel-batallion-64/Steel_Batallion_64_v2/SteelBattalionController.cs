@@ -74,12 +74,10 @@ namespace SBC
     {
         public Microsoft.DirectX.DirectInput.Key keyCode1;
         public Microsoft.DirectX.DirectInput.Key modifier;
-        public Microsoft.DirectX.DirectInput.Key[] modifierKeyCodes;
         public bool holdDown;
         public bool useModifier;
         public KeyProperties(Microsoft.DirectX.DirectInput.Key a, bool b)
         {
-            modifierKeyCodes = new Microsoft.DirectX.DirectInput.Key[0];
             modifier = (Microsoft.DirectX.DirectInput.Key)(0);
             keyCode1 = a;
             holdDown = b;
@@ -87,16 +85,7 @@ namespace SBC
         }
         public KeyProperties(Microsoft.DirectX.DirectInput.Key a, Microsoft.DirectX.DirectInput.Key b, bool c)//used when we have a modifier
         {
-            modifierKeyCodes = new Microsoft.DirectX.DirectInput.Key[0];
             modifier = a;
-            keyCode1 = b;
-            holdDown = c;
-            useModifier = true;
-        }
-        public KeyProperties(Microsoft.DirectX.DirectInput.Key[] a, Microsoft.DirectX.DirectInput.Key b, bool c)//used when we have a modifier
-        {
-            modifierKeyCodes = a;
-            modifier = (Microsoft.DirectX.DirectInput.Key)(0);
             keyCode1 = b;
             holdDown = c;
             useModifier = true;
@@ -122,7 +111,7 @@ namespace SBC
 		#region Public and Private variables
 		private DateTime LastDataEventDate = DateTime.Now;
 		private UsbDevice MyUsbDevice;
-        private Hashtable ButtonLightsHash = new Hashtable();
+        private Hashtable ButtonLights = new Hashtable();
         private Hashtable ButtonKeys = new Hashtable();
         private bool updateGearLights = true;
         private int gearLightIntensity = 3;
@@ -146,7 +135,7 @@ namespace SBC
 		/// <summary>
 		/// The byte buffer that the raw control data is stored
 		/// </summary>
-		byte[] rawControlData = new Byte[26];
+		public byte[] rawControlData = new Byte[26];
 		
 		/// <summary>
 		/// The byte buffer that the raw LED data is stored
@@ -200,37 +189,22 @@ namespace SBC
             AddButtonKeyMapping(button, keyCode1, keyCode2, holdDown);
         }
 
-        public void AddButtonKeyLightMapping(ButtonEnum button, bool lightOnHold, int intensity, Microsoft.DirectX.DirectInput.Key[] modifierKeyCodes, Microsoft.DirectX.DirectInput.Key keyCode2, bool holdDown)
-        {
-            AddButtonLightMapping(button, lightOnHold, intensity);
-            AddButtonKeyMapping(button, modifierKeyCodes, keyCode2, holdDown);
-        }
-
         public void AddButtonLightMapping(ButtonEnum button, bool lightOnHold, int intensity)
         {
             int buttonEquivalent = (int)button;
-            ButtonLights[] values = (ButtonLights[]) Enum.GetValues(typeof(ButtonLights));
-			for(int i = 0; i < values.Length; i++)
-                if ((int)button == (int)values[i])
-                {
-                    ControllerLEDEnum light = (ControllerLEDEnum)GetLightForButton(button);
-                    AddButtonLightMapping(button, light, lightOnHold, intensity);
-                    break;
-                }
+            ControllerLEDEnum light = (ControllerLEDEnum)GetLightForButton(button);
+            AddButtonLightMapping(button, light, lightOnHold, intensity);
         }
 
         public void AddButtonLightMapping(ButtonEnum button, ControllerLEDEnum LED,bool lightOnHold,int intensity)
         {
-            int buttonEquivalent = (int)button;
-            ButtonLights[] values = (ButtonLights[]) Enum.GetValues(typeof(ButtonLights));
-			for(int i = 0; i < values.Length; i++)
-                if ((int)button == (int)values[i])
-                {
-                    if (ButtonLightsHash.Contains((int)button))
-                        ButtonLightsHash.Remove((int)button);//to save on later garbage collection
-                    ButtonLightsHash[(int)button] = new LightProperties(LED, lightOnHold, intensity);
-                    break;
-                }
+            /*if (!ButtonLights.ContainsKey(button))
+                ButtonLights.Add((int)button, new LightProperties(LED, lightOnHold, intensity));
+            else*/
+            if (ButtonLights.Contains((int)button))
+                ButtonLights.Remove((int)button);//to save on later garbage collection
+            ButtonLights[(int)button] = new LightProperties(LED, lightOnHold, intensity);
+            
         }
 
         public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
@@ -243,11 +217,6 @@ namespace SBC
         public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key modifier, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
         {
             ButtonKeys[(int)button] = new KeyProperties(modifier,keyCode, holdDown);
-        }
-
-        public void AddButtonKeyMapping(ButtonEnum button, Microsoft.DirectX.DirectInput.Key[] modifierKeyCodes, Microsoft.DirectX.DirectInput.Key keyCode, bool holdDown)
-        {
-            ButtonKeys[(int)button] = new KeyProperties(modifierKeyCodes, keyCode, holdDown);
         }
 
         public Microsoft.DirectX.DirectInput.Key GetButtonKey(ButtonEnum button)
@@ -483,16 +452,6 @@ namespace SBC
 
             return ((rawControlData[mask.bytePos] & mask.maskValue) > 0);
         }
-
-        /// <summary>
-        /// Checks the individual button state
-        /// </summary>
-        /// <param name="buf">Int value of button enum</param>
-        public bool GetButtonState(ButtonEnum button)
-        {
-            return GetButtonState((int)button);
-        }
-
         /// <summary>
         /// Checks if individual button state has changed
         /// </summary>
@@ -552,10 +511,10 @@ namespace SBC
                         updateLights = true;
                     }
                     //check button - light mapping
-					if(ButtonLightsHash.ContainsKey(i))
+					if(ButtonLights.ContainsKey(i))
 					{
 						updateLights = true;
-						LightProperties currentLightProperties = (LightProperties)(ButtonLightsHash[i]);
+						LightProperties currentLightProperties = (LightProperties)(ButtonLights[i]);
 
 						if (currentLightProperties.lightOnHold)
 							if(state.currentState)
@@ -578,12 +537,7 @@ namespace SBC
 						if (currentKeyProperties.useModifier)
 						{
                             if (state.currentState)//button is pressed, then press key
-                            {
-                                if (currentKeyProperties.modifierKeyCodes.Length > 0)
-                                    InputSimulator.SimulateModifiedKeyStroke(currentKeyProperties.modifierKeyCodes, currentKeyProperties.keyCode1);
-                                else
-                                    InputSimulator.SimulateModifiedKeyStroke(currentKeyProperties.modifier, currentKeyProperties.keyCode1);
-                            }
+                                InputSimulator.SimulateModifiedKeyStroke(currentKeyProperties.modifier, currentKeyProperties.keyCode1);
 						}
 						else
 						{
@@ -658,57 +612,86 @@ namespace SBC
 		/// Corresponds to the "Rotation Lever" joystick on the left.
 		/// </summary>
 		public int RotationLever {
-            get { return (int)unchecked((sbyte)rawControlData[13]); }
-		}
+            get { return getSignedAxisValue(13, 14); }
+        }
 
 		/// <summary>
 		/// Corresponds to the "Sight Change" analog stick on the "Rotation Lever" joystick.  X Axis value.
 		/// </summary>
 		public int SightChangeX {
-            get { return (int)unchecked((sbyte)rawControlData[15]); }
-		}
+            get { return getSignedAxisValue(15, 16); }
+        }
 
 		/// <summary>
 		/// Corresponds to the "Sight Change" analog stick on the "Rotation Lever" joystick.  Y Axis value.
 		/// </summary>
 		public int SightChangeY {
-            get { return (int)unchecked((sbyte)rawControlData[17]); }
-		}
+            get { return getSignedAxisValue(17, 18); }
+        }
 
 		/// <summary>
 		/// Corresponds to the "Aiming Lever" joystick on the right.  X Axis value.
 		/// </summary>
 		public int AimingX {
-			get { return (int) rawControlData[9]; }
+			get {return getAxisValue(9,10);}
 		}
 
 		/// <summary>
 		/// Corresponds to the "Aiming Lever" joystick on the right.  Y Axis value.
 		/// </summary>
 		public int AimingY {
-			get { return (int) rawControlData[11]; }
+            get { return getAxisValue(11, 12); }
 		}
+        /// <summary>
+        /// Used to bitshift array and actually return proper 10-bit value for axis.
+        /// </summary>
+        private int getAxisValue(int firstIndex, int SecondIndex)
+        {
+            int temp = rawControlData[firstIndex];
+            int temp2 = rawControlData[SecondIndex];
+            temp = temp << 2;
+            temp2 = temp2 >> 6;
+            temp = temp | temp2;
+            return temp;
+        }
+
+        /// <summary>
+        /// Used to bitshift array and actually return proper 10-bit value for axis.
+        /// </summary>
+        private int getSignedAxisValue(int firstIndex, int SecondIndex)
+        {
+            uint temp = rawControlData[firstIndex];
+            uint temp2 = rawControlData[SecondIndex];
+            short result;
+            temp = temp << 2;
+            temp2 = temp2 >> 6;
+            temp = temp | temp2;
+            if (rawControlData[firstIndex] >= 128)//we need to pad on some 1's so that we can use 16-bit 2's complement
+                temp |= 0xFC00;//0b1111110000000000
+            result = unchecked((short)temp);
+            return (int)result;
+        }
 
 		/// <summary>
 		/// Corresponds to the left pedal on the pedal block
 		/// </summary>
 		public int LeftPedal {
-			get { return (int) rawControlData[19]; }
-		}
+            get { return getAxisValue(19, 20); }
+        }
 
 		/// <summary>
 		/// Corresponds to the middle pedal on the pedal block
 		/// </summary>
 		public int MiddlePedal {
-			get { return (int) rawControlData[21]; }
-		}
+            get { return getAxisValue(21, 22); }
+        }
 
 		/// <summary>
 		/// Corresponds to the right pedal on the pedal block
 		/// </summary>
 		public int RightPedal {
-			get { return (int) rawControlData[23]; }
-		}
+            get { return getAxisValue(23, 24); }
+        }
 
 		/// <summary>
 		/// Corresponds to the tuner dial position.  The 9 o'clock postion is 0, and the 6 o'clock position is 12.
