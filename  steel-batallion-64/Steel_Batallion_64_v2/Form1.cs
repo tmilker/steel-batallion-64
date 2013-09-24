@@ -99,7 +99,7 @@ namespace SBC
                     CSharpObject = results.CompiledAssembly.CreateInstance("SBC.DynamicClass");
 
 				    // Create the thread object. This does not start the thread.
-				    workerObject = new Worker(ref CSharpObject);
+				    workerObject = new Worker(ref CSharpObject,this);
 				    workerThread = new Thread(workerObject.DoWork);
                     Status.Text = "Running";
 				    ProgramStarted = true;
@@ -122,6 +122,27 @@ namespace SBC
                 ProgramStarted = false;
             }
 		}
+
+        public delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
+        public static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
+        {
+            if (control.InvokeRequired)
+            {
+                control.Invoke(new SetControlPropertyThreadSafeDelegate(SetControlPropertyThreadSafe), new object[] { control, propertyName, propertyValue });
+            }
+            else
+            {
+                control.GetType().InvokeMember(propertyName, BindingFlags.SetProperty, null, control, new object[] { propertyValue });
+            }
+        }
+
+        public void updateDebugString(String text)
+        {
+            string[] newLines = text.Split(new string[] { "\n" }, StringSplitOptions.None);
+            // thread-safe equivalent of
+            // myLabel.Text = status;
+            SetControlPropertyThreadSafe(errorBox, "Lines", newLines);
+        }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -166,9 +187,11 @@ date.ToShortDateString() +
 	public class Worker
 	{
 		Object CSharpObject;
-		public Worker(ref Object anObject)
+        Form1 myForm;
+		public Worker(ref Object anObject, Form1 form)
 		{
 			CSharpObject = anObject;
+            myForm = form;
 		}
 		// This method will be called when the thread is started.
 		public void DoWork()
@@ -177,12 +200,18 @@ date.ToShortDateString() +
             try
             {
                 CSharpObject.GetType().InvokeMember("Initialize", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
-
+                string[] debugLines = new string[1];
 
 		        int refreshRate = (int)CSharpObject.GetType().InvokeMember("getRefreshRate", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
 		        while (!_shouldStop)
 		        {
 			        CSharpObject.GetType().InvokeMember("mainLoop", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
+                    if (CSharpObject.GetType().GetMethod("getDebugString") != null)
+                    {
+                        String aString = (String)CSharpObject.GetType().InvokeMember("getDebugString", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);
+                        //String aString;
+                        myForm.updateDebugString(aString);
+                    }
 			        Thread.Sleep(refreshRate);
 		        }
 		        CSharpObject.GetType().InvokeMember("shutDown", System.Reflection.BindingFlags.InvokeMethod, null, CSharpObject, null);

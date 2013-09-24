@@ -2,11 +2,12 @@
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using Microsoft.DirectX.DirectInput;
+using WindowsInput;
 //http://damiproductions.darkbb.com/t504-c-sending-keys-with-the-sendinput-api
 
 namespace SBC
 {
-    internal class InputSimulator
+    public static class InputSimulator
     {
         #region Imports
 
@@ -23,6 +24,8 @@ namespace SBC
         public static extern IntPtr WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
         #endregion
+
+        
 
         public static int ModifiedKeyStrokeDelay = 5;//number of milliseconds combination keys will be held down.
                                               //this number was experimentally found out as the minimum necessary for MW4 to respond to modified
@@ -99,6 +102,23 @@ namespace SBC
 
             SendInput(1, pInputs, Marshal.SizeOf(structure));
         }
+
+        /// <summary>
+        /// Simulates mouse movement by the specified distance measured as a delta from the current mouse location in pixels.
+        /// </summary>
+        /// <param name="pixelDeltaX">The distance in pixels to move the mouse horizontally.</param>
+        /// <param name="pixelDeltaY">The distance in pixels to move the mouse vertically.</param>
+        public static void MoveMouseBy(int pixelDeltaX, int pixelDeltaY)
+        {
+            WindowsInput.InputSimulator sim = new WindowsInput.InputSimulator();
+            //sim.Mouse.MoveMouseTo(absoluteX, absoluteY);
+            //sim.Mouse.MoveMouseTo(10000, 10000);
+            sim.Mouse.MoveMouseBy(pixelDeltaX, pixelDeltaY);
+
+        }
+
+
+
 
         public static void SimulateKeyPress(Microsoft.DirectX.DirectInput.Key key)
         {
