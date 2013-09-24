@@ -7,9 +7,15 @@ using Microsoft.DirectX.DirectInput;
 namespace SBC{
 public class DynamicClass
 {
+String debugString = "";
 SteelBattalionController controller;
 vJoy joystick;
 bool acquired;
+bool mouseStarted = false;
+int desiredX;
+int desiredY;
+int currentX = -1;
+int currentY = -1;
 
 const int refreshRate = 50;//number of milliseconds between call to mainLoop
 
@@ -32,9 +38,24 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 		
          controller.AddButtonKeyLightMapping(ButtonEnum.CockpitHatch,            true, 3,    Microsoft.DirectX.DirectInput.Key.A, true);//last true means if you hold down the button,		
 		 controller.AddButtonKeyLightMapping(ButtonEnum.FunctionF1,				true, 3,    Microsoft.DirectX.DirectInput.Key.B, true);
+		 controller.AddButtonKeyMapping(ButtonEnum.RightJoyMainWeapon,Microsoft.DirectX.DirectInput.Key.C, true);
 		 joystick = new vJoy();
 		 acquired = joystick.acquireVJD(1);
 		 joystick.resetAll();//have to reset before we use it
+		
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_SL1);			
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_X);
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_Y);
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_Z);//throttle
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_RZ);
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_SL0);		
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_RX);				
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_RY);	
+		 
+		 
+		desiredX = currentX = controller.AimingX;
+		desiredY = currentY = controller.AimingY;
+		 
 	}
 	
 	//this is necessary, as main program calls this to know how often to call mainLoop
@@ -64,6 +85,10 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 			temp = 0;
 		return temp;
 	}
+	
+//	private int scaledValue(int min, int middle, int max, int deadZone)
+
+	
 
 	//this gets called once every refreshRate milliseconds by main program
 	public void mainLoop()
@@ -71,6 +96,12 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 	float lowValue = 124;
 	float highValue = 255;
 	int gearValue;
+	
+	int numPixels = 600;
+	
+	desiredX = (int)((controller.AimingX / 1024.0) * numPixels);
+	desiredY = (int)((controller.AimingY / 1024.0) * numPixels);
+
 	
 	if (controller.GearLever == -2)//R
 		gearValue = -255;
@@ -80,14 +111,41 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 	{
 		gearValue = (int)(lowValue + (highValue - lowValue)*((controller.GearLever-1.0)/4.0));
 	}
+	
+		debugString = "not in";
+		if((bool)controller.GetButtonState(ButtonEnum.RightJoyMainWeapon))
+		{
+			debugString = "RightJoyMainWeapon";
+			desiredX = currentX;
+			desiredY = currentY;
+		}
+		if((bool)controller.GetButtonState(ButtonEnum.RightJoyLockOn))
+		{
+		int deltaX = desiredX - currentX;
+		int deltaY = desiredY - currentY;
+		currentX = desiredX;
+		currentY = desiredY;
+
+		//debugString = "in";
+		InputSimulator.MoveMouseBy(deltaX,deltaY);
+		}
+		/*
 		joystick.setAxis(1,controller.GearLever,HID_USAGES.HID_USAGE_SL1);	
-		joystick.setAxis(1,controller.AimingX,HID_USAGES.HID_USAGE_X);
-		joystick.setAxis(1,controller.AimingY,HID_USAGES.HID_USAGE_Y);
+		
+		//joystick.setAxis(1,controller.AimingX,HID_USAGES.HID_USAGE_X);
+		//joystick.setAxis(1,controller.AimingY,HID_USAGES.HID_USAGE_Y);
+
+		
+		
+		
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_X);
+		joystick.setAxis(1,32768/2,HID_USAGES.HID_USAGE_Y);
+		
 		joystick.setAxis(1,-1*(controller.RightPedal - controller.MiddlePedal),HID_USAGES.HID_USAGE_Z);//throttle
 		joystick.setAxis(1,controller.RotationLever,HID_USAGES.HID_USAGE_RZ);
 		joystick.setAxis(1,controller.SightChangeX,HID_USAGES.HID_USAGE_SL0);		
 		joystick.setAxis(1,controller.SightChangeY,HID_USAGES.HID_USAGE_RX);				
-		joystick.setAxis(1,controller.LeftPedal,HID_USAGES.HID_USAGE_RY);						
+		joystick.setAxis(1,controller.LeftPedal,HID_USAGES.HID_USAGE_RY);		*/				
 
 		
 		joystick.setContPov(1,getDegrees(controller.SightChangeX,controller.SightChangeY),1);
@@ -100,6 +158,12 @@ const int refreshRate = 50;//number of milliseconds between call to mainLoop
 		
 		joystick.sendUpdate(1);
 
+	}
+	
+	//new necessary function used for debugging purposes
+	public String getDebugString()
+	{
+		return debugString;
 	}
 	
 	//this gets called at the end of the program and must be present, as it cleans up resources
